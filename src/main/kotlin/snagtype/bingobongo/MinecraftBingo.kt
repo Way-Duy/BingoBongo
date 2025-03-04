@@ -11,5 +11,19 @@ object MinecraftBingo : ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		logger.info("Hello Fabric world!")
+		/* Java code
+		final JsonExportProcess process = new JsonExportList(this.configDirectory, this.exportConfig);
+		final Thread exportProcessThread = new Thread( process);
+		this.startService( "BingoMod Json Export", exportProcessThread);
+		*/
+	}
+
+	@EventHandler
+	fun serverLoad(event: FMLServerStartingEvent) {
+		event.registerServerCommand(CreateBingoCommand(this.bingoConfig))
+		//event.registerServerCommand(ToggleFreeSpaceCommand(this.bingoConfig))
+		//event.registerServerCommand(new AddModToBlacklistCommand(ModBlacklistDirectory,this.bingoConfig));
+		// event.registerServerCommand(new PrintModBlacklistCommand(ModBlacklistDirectory));
+		//event.registerServerCommand(new RemoveModFromBlacklistCommand(ModBlacklistDirectory));
 	}
 }
