@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory
 
 
 object MinecraftBingo : ModInitializer {
-    private val logger = LoggerFactory.getLogger("minecraft-bingo")
+    private val logger = LoggerFactory.getLogger("BingoBongo")
+
 
 	override fun onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -34,10 +35,12 @@ object MinecraftBingo : ModInitializer {
 		*/
 	}
 
+	/*
 	@EventHandler
 	fun serverLoad(event: FMLServerStartingEvent) {
 		//todo: add server commands
 		//event.registerServerCommand(CreateBingoCommand(this.bingoConfig))
 		//event.registerServerCommand(ToggleFreeSpaceCommand(this.bingoConfig))
 	}
+ 	*/
 }
