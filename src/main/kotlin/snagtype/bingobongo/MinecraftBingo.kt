@@ -3,6 +3,7 @@ package snagtype.bingobongo
 import net.fabricmc.api.ModInitializer
 import org.slf4j.LoggerFactory
 
+
 object MinecraftBingo : ModInitializer {
     private val logger = LoggerFactory.getLogger("minecraft-bingo")
 
@@ -17,15 +18,26 @@ object MinecraftBingo : ModInitializer {
 		final Thread exportProcessThread = new Thread( process);
 		this.startService( "BingoMod Json Export", exportProcessThread);
 		*/
+
+		/*creating config file for the commands
+		com.snagtype.modbingo.BingoModRandomizor.logger = event.getModLog()
+		com.snagtype.modbingo.BingoModRandomizor.configDirectory =
+			File(event.getModConfigurationDirectory().getPath(), "BingoMod")
+		val recipeFile: File = File(com.snagtype.modbingo.BingoModRandomizor.configDirectory, "CustomRecipes.cfg")
+		val recipeConfiguration: Configuration = Configuration(recipeFile)
+		this.exportConfig = ForgeExportConfig(recipeConfiguration)
+
+		val configFile: File =
+			File(com.snagtype.modbingo.BingoModRandomizor.configDirectory, "Bingo.cfg") //creating bingo.cfg empty
+		val bingoConfiguration: Configuration = Configuration(configFile)
+		bingoConfig = BingoAdvancementConfig(bingoConfiguration)
+		*/
 	}
 
 	@EventHandler
 	fun serverLoad(event: FMLServerStartingEvent) {
-		event.registerServerCommand(CreateBingoCommand(this.bingoConfig))
 		//todo: add server commands
+		//event.registerServerCommand(CreateBingoCommand(this.bingoConfig))
 		//event.registerServerCommand(ToggleFreeSpaceCommand(this.bingoConfig))
-		//event.registerServerCommand(new AddModToBlacklistCommand(ModBlacklistDirectory,this.bingoConfig));
-		// event.registerServerCommand(new PrintModBlacklistCommand(ModBlacklistDirectory));
-		//event.registerServerCommand(new RemoveModFromBlacklistCommand(ModBlacklistDirectory));
 	}
 }
