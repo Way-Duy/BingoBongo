@@ -1,1 +1,4 @@
-//todo: creates a command that randomizes and makes a new bingo sheet
+package snagtype.bingobongo.mixin.client
+
+
+class CreateBingoCommand
