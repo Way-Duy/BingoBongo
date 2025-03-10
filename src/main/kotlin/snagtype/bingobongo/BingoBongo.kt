@@ -11,7 +11,7 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import org.slf4j.LoggerFactory
 
-object MinecraftBingo : ModInitializer {
+object BingoBongo : ModInitializer {
     private val logger = LoggerFactory.getLogger("BingoBongo")
 
 
