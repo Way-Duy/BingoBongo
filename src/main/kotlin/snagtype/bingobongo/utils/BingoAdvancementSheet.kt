@@ -1,3 +1,6 @@
+package snagtype.bingobongo.mixin.client
+import snagtype.bingobongo.BingoBongo
+
 //todo given a list of 24/25 items, create a a bingo sheet
 // (optional) make separate bingo advancements tab
 // grid will something look like this if vanilla:

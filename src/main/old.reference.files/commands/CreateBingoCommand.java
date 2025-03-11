@@ -38,7 +38,7 @@ public class CreateBingoCommand  {
         aliases.add("create");
         this.config = config;
         this.advancementDirectory = new File(DimensionManager.getCurrentSaveRootDirectory()+ ADVANCEMENT_DIRECTORY_SUFFIX);
-        ModBingoLog.info(advancementDirectory.toString());
+       BingoBongo.logger.info(advancementDirectory.toString());
     }
 
     @Override

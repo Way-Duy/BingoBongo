@@ -23,7 +23,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"minecraft-bingo" {
+		"bingobongo" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

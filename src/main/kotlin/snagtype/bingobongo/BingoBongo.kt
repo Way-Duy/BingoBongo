@@ -1,5 +1,4 @@
 package snagtype.bingobongo
-
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.api.ModInitializer
@@ -12,11 +11,10 @@ import net.minecraft.text.Text
 import org.slf4j.LoggerFactory
 
 object BingoBongo : ModInitializer {
-    private val logger = LoggerFactory.getLogger("BingoBongo")
-
+     val logger = LoggerFactory.getLogger("BingoBongo")
 
 	override fun onInitialize() {
-
+		logger.info("Testing")
 		CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource?>, registryAccess: CommandRegistryAccess?, environment: RegistrationEnvironment? ->
 			dispatcher.register(
 				CommandManager.literal("CreateBingoCommand").executes { context: CommandContext<ServerCommandSource> ->

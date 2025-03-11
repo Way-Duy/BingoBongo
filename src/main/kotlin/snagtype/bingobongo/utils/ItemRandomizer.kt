@@ -1,3 +1,6 @@
+package snagtype.bingobongo.mixin.client
+import snagtype.bingobongo.BingoBongo
+
 //todo: given a list of items, randomly select given count (24/25 depending on free space)
 // random selection should ignore NBT
 //weight each mod proportional to the number of items in each mod. (subject to change)

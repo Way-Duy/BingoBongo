@@ -12,26 +12,26 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/minecraft-bingo/icon.png",
+	"icon": "assets/bingobongo/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
 			{
-				"value": "snagtype.bingobongo.MinecraftBingo",
+				"value": "snagtype.bingobongo.BingoBongo",
 				"adapter": "kotlin"
 			}
 		],
 		"client": [
 			{
-				"value": "snagtype.bingobongo.MinecraftBingoClient",
+				"value": "snagtype.bingobongo.BingoBongoClient",
 				"adapter": "kotlin"
 			}
 		]
 	},
 	"mixins": [
-		"minecraft-bingo.mixins.json",
+		"bingobongo.mixins.json",
 		{
-			"config": "minecraft-bingo.client.mixins.json",
+			"config": "bingobongo.client.mixins.json",
 			"environment": "client"
 		}
 	],
