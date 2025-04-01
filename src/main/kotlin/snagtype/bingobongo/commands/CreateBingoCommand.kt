@@ -1,4 +1,4 @@
-package snagtype.bingobongo.mixin.client
+package snagtype.bingobongo.commands
 //needs a way to read free spaces; no config files for fabric
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
@@ -21,23 +21,17 @@ private const val DEFAULT_BINGO_ITEMS = 25;
 
 class CreateBingoCommand
 {
-
-     fun onInitialize() {
-        CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource?>?, registryAccess: CommandRegistryAccess?, environment: RegistrationEnvironment ->
-            if (environment.dedicated) {
-                BingoBongo.logger.info("Advancement Directory: " + advancementDirectory.toString())
-
-            }
-        })
-    }
     private var aliases: List<*>? = null
     private val itemList: List<Item>? = null
     private var advancementDirectory: File? = null
-    fun CreateBingoCommand() {
+
+    init {
+        BingoBongo.logger.info("before setting advancement Directory")
         aliases = ArrayList<Any?>()
         advancementDirectory = File( Paths.get("").toAbsolutePath().toString() + ADVANCEMENT_DIRECTORY_SUFFIX)
-        //will print to log if working properly
-    }}
+
+    }
+}
 /*
 @Throws(CommandException::class)
  fun execute(server: MinecraftServer?, args: Array<String?>?) {

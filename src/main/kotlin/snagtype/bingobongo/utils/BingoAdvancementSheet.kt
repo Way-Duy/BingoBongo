@@ -1,4 +1,4 @@
-package snagtype.bingobongo.mixin.client
+package snagtype.bingobongo.utils
 import snagtype.bingobongo.BingoBongo
 
 //todo given a list of 24/25 items, create a a bingo sheet

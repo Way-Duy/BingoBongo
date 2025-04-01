@@ -32,7 +32,6 @@ public class PrintBingoCommand implements ICommand {
         IForgeRegistry<Item> itemRegistry = ForgeRegistries.ITEMS;
         Iterable<Item> items = itemRegistry;
         itemList = Lists.newArrayList( items );
-
     }
 
     @Override

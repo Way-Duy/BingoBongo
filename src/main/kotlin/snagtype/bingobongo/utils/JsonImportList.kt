@@ -1,4 +1,4 @@
-package snagtype.bingobongo.mixin.client
+package snagtype.bingobongo.utils
 import snagtype.bingobongo.BingoBongo
 
 //todo: returns a list of items

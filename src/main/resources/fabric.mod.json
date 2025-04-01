@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "minecraft-bingo",
+	"id": "bingobongo",
 	"version": "${version}",
-	"name": "Minecraft Bingo",
+	"name": "bingo bongo",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
 		"Me!"
