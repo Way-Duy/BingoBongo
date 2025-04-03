@@ -16,15 +16,10 @@ import java.nio.file.Paths
 
 
 object BingoBongo : ModInitializer {
+
+	 var isFreeSpaceEnabled: Boolean = false
      val logger = LoggerFactory.getLogger("BingoBongo")
 
-	/*object ModEvents {
-		fun register() {
-			ServerLifecycleEvents.SERVER_STARTING.register { server ->
-				println("Server is starting!")
-			}
-		}
-	}*/
 
 	override fun onInitialize() {
 		 CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource?>, registryAccess: CommandRegistryAccess?, environment: RegistrationEnvironment? ->
@@ -42,7 +37,8 @@ object BingoBongo : ModInitializer {
 					1
 				})
 		})
-
+		//this will be moved to a command
+		fun toggleFreeSpace() {isFreeSpaceEnabled= !isFreeSpaceEnabled}
 
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.

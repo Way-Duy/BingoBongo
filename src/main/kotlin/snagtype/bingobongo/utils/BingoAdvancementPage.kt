@@ -1,5 +1,8 @@
 package snagtype.bingobongo.utils
-import snagtype.bingobongo.BingoBongo
+
+import com.google.common.base.Preconditions
+import net.minecraft.item.Item
+import java.io.File
 
 //todo given a list of 24/25 items, create a a bingo sheet
 // (optional) make separate bingo advancements tab
@@ -13,3 +16,7 @@ import snagtype.bingobongo.BingoBongo
 // [x]->[x]->[x]->[x]->[x]->[ ]
 // [x]->[x]->[x]->[x]->[x]->[ ]
 // [x]->[x]->[x]->[x]->[x]->[ ]
+
+fun BingoAdvancementPage( exportDirectory: File,  itemList: List<Item>, isFreeSpaceEnabled: Boolean) {
+
+}
