@@ -17,7 +17,7 @@ import java.io.File
 // [x]->[x]->[x]->[x]->[x]->[ ]
 // [x]->[x]->[x]->[x]->[x]->[ ]
 
-class BingoAdvancementPage(exportDirectory: File?,  itemList: List<Item>) {
+class BingoAdvancementPage(exportDirectory: File?,  itemList: List<Item>?) {
 
 
     init {

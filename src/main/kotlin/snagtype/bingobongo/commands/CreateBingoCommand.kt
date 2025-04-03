@@ -38,14 +38,13 @@ class CreateBingoCommand
         itemList = ListRandomizer.getRandomItemList(JsonUtil.JsonImportList(), DEFAULT_BINGO_ITEMS)
         val process: BingoAdvancementPage = BingoAdvancementPage(
             this.advancementDirectory,
-            itemList!!
+            itemList
         ) // need itemforge list of 25 items
 
-        //thread overloaded issue *ask dylan
-        /*
-        val bingoAdvancementPageThread: Thread = Thread(process)
-        this.startService("BingoMod Creating Advancements Page", bingoAdvancementPageThread)
-        */
+        //thread issue here? went from being overloaded to having none somehow
+        //val bingoAdvancementPageThread: Thread = Thread(process)
+        //this.startService("BingoMod Creating Advancements Page", bingoAdvancementPageThread)
+
         BingoBongo.logger.info( "Bingo Card generated in Advancements")
     }
 
