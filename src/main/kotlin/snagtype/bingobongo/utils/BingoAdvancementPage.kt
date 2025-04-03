@@ -17,6 +17,11 @@ import java.io.File
 // [x]->[x]->[x]->[x]->[x]->[ ]
 // [x]->[x]->[x]->[x]->[x]->[ ]
 
-fun BingoAdvancementPage( exportDirectory: File,  itemList: List<Item>, isFreeSpaceEnabled: Boolean) {
+class BingoAdvancementPage(exportDirectory: File?,  itemList: List<Item>) {
+
+
+    init {
+
+    }
 
 }
