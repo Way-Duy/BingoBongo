@@ -80,12 +80,4 @@ object BingoBongo : ModInitializer {
 		*/
 
 	}
-	fun postInitialize(){
-		for (item in Registries.ITEM) {
-			//val itemId = Registries.ITEM.getId(item) ?: continue // itemId format: "ModName:ItemName
-			val itemStack = ItemStack(item)
-			val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
-			println(tagList)
-		}
-	}
 }
