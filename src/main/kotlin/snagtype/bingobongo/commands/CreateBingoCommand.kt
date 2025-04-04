@@ -4,6 +4,8 @@ import net.minecraft.command.CommandException
 import snagtype.bingobongo.utils.BingoAdvancementPage
 //import snagtype.bingobongo.utils.ItemRandomizer
 import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
+import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import snagtype.bingobongo.BingoBongo
 import snagtype.bingobongo.utils.JsonUtil
@@ -27,15 +29,16 @@ class CreateBingoCommand
         aliases = ArrayList<Any?>()
         advancementDirectory = File( Paths.get("").toAbsolutePath().toString() + ADVANCEMENT_DIRECTORY_SUFFIX)
         BingoBongo.logger.info("Advancement Directory: "+ advancementDirectory.toString())
+        println("Registered Blocks:")
+
+
     }
     // not sure why we had this....
     // fun getRandomItem(): Item? = itemList?.random()
 
-//finish advancement/randomizer classes
-
     @Throws(CommandException::class)
      fun execute(server: MinecraftServer?, args: Array<String?>?) {
-        itemList = ListRandomizer.getRandomItemList(JsonUtil.JsonImportList(), DEFAULT_BINGO_ITEMS)
+        itemList = ListRandomizer.getRandomItemList(JsonUtil.jsonImportList(), DEFAULT_BINGO_ITEMS)
         val process: BingoAdvancementPage = BingoAdvancementPage(
             this.advancementDirectory,
             itemList

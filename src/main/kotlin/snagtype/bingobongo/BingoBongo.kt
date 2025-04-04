@@ -5,14 +5,19 @@ import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandRegistryAccess
 import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
+import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKeys
+
+import net.minecraft.registry.tag.TagKey
+import net.minecraft.util.Identifier
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.CommandManager.RegistrationEnvironment
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import org.slf4j.LoggerFactory
 import snagtype.bingobongo.commands.CreateBingoCommand
-import java.io.File
-import java.nio.file.Paths
+import java.util.*
 
 
 object BingoBongo : ModInitializer {
@@ -45,6 +50,15 @@ object BingoBongo : ModInitializer {
 		// Proceed with mild caution.
 		logger.info("Hello Fabric world!")
 		//todo: export json here
+
+		for (item in Registries.ITEM) {
+			//val itemId = Registries.ITEM.getId(item) ?: continue // itemId format: "ModName:ItemName
+			val itemStack = ItemStack(item)
+			val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
+			println(tagList)
+		}
+		//JsonUtil.jsonExportList(List)
+
 		/* Java code
 		final JsonExportProcess process = new JsonExportList(this.configDirectory, this.exportConfig);
 		final Thread exportProcessThread = new Thread( process);
@@ -66,5 +80,12 @@ object BingoBongo : ModInitializer {
 		*/
 
 	}
-
+	fun postInitialize(){
+		for (item in Registries.ITEM) {
+			//val itemId = Registries.ITEM.getId(item) ?: continue // itemId format: "ModName:ItemName
+			val itemStack = ItemStack(item)
+			val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
+			println(tagList)
+		}
+	}
 }
