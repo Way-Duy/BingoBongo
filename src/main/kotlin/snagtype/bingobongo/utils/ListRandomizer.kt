@@ -15,6 +15,8 @@ class ListRandomizer() {
 
     companion object {
         fun getRandomItemList(completeItemList: List<Item>?, bingoSize: Int): List<Item>? {
+            //todo: imports  the list using JsonUtil and randomly selects a number of elements equal to the bingo size
+            // and returns them
             var bingoItemList: List<Item>? = null
             return bingoItemList
         }

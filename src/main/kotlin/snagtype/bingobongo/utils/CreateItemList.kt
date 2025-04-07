@@ -10,11 +10,14 @@ class CreateItemList {
             for (item in Registries.ITEM) {
                 // every itemList element is a list of itemStrings for a particular itemID
                 val itemStrings = mutableListOf<String>()
-                val itemId = Registries.ITEM.getId(item) ?: continue // itemId format: "ModName:ItemName
-                itemStrings.add(Parser.getItemName(itemId)) // element 0 = item name
-                itemStrings.add(Parser.getItemModName(itemId)) //element 1 = mod name
+                val itemID = Registries.ITEM.getId(item) ?: continue // itemId format: "ModName:ItemName
+
+                itemStrings.add(Parser.getItemName(itemID)) // element 0 = item name
+                itemStrings.add(Parser.getItemModName(itemID)) //element 1 = mod name
                 val itemStack = ItemStack(item)
                 val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
+                println("item ID: $itemID")
+                println("list of Tags: $tagList")
                 for (tagListItem in tagList.listIterator()) {
                     itemStrings.add(Parser.getTagName(tagListItem)) // element 1 + x = associated tag names
                 }

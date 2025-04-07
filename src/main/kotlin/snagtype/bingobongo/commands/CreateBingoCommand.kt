@@ -29,13 +29,6 @@ class CreateBingoCommand
         aliases = ArrayList<Any?>()
         advancementDirectory = File( Paths.get("").toAbsolutePath().toString() + ADVANCEMENT_DIRECTORY_SUFFIX)
         BingoBongo.logger.info("Advancement Directory: "+ advancementDirectory.toString())
-        println("Registered Blocks:")
-        for (item in Registries.ITEM) {
-            //val itemId = Registries.ITEM.getId(item) ?: continue // itemId format: "ModName:ItemName
-            val itemStack = ItemStack(item)
-            val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
-            println(tagList)
-        }
 
     }
     // not sure why we had this....

@@ -1,6 +1,7 @@
 package snagtype.bingobongo.utils
 import net.minecraft.item.Item
-
+import net.minecraft.registry.Registries
+import net.minecraft.util.Identifier
 
 class JsonUtil{
 
@@ -17,6 +18,12 @@ class JsonUtil{
         fun jsonImportList():List<Item>? {
             var completeItemList: List<Item>? = null
             return completeItemList
+        }
+
+        //untested code to convert from String to Item
+        fun getItemFromStringId(idString: String): Item? {
+            val identifier = Identifier.tryParse(idString) ?: return null
+            return Registries.ITEM.get(identifier)
         }
     }
 
