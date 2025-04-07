@@ -4,20 +4,19 @@ import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandRegistryAccess
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKeys
-
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.CommandManager.RegistrationEnvironment
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import org.slf4j.LoggerFactory
 import snagtype.bingobongo.commands.CreateBingoCommand
-import java.util.*
+import snagtype.bingobongo.utils.CreateItemList
+import snagtype.bingobongo.utils.JsonUtil
+import snagtype.bingobongo.utils.Parser
 
 
 object BingoBongo : ModInitializer {
@@ -50,14 +49,9 @@ object BingoBongo : ModInitializer {
 		// Proceed with mild caution.
 		logger.info("Hello Fabric world!")
 		//todo: export json here
+		registerWorldLoadListener() // registers listener for post World creation
 
-		for (item in Registries.ITEM) {
-			//val itemId = Registries.ITEM.getId(item) ?: continue // itemId format: "ModName:ItemName
-			val itemStack = ItemStack(item)
-			val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
-			println(tagList)
-		}
-		//JsonUtil.jsonExportList(List)
+
 
 		/* Java code
 		final JsonExportProcess process = new JsonExportList(this.configDirectory, this.exportConfig);
@@ -80,4 +74,12 @@ object BingoBongo : ModInitializer {
 		*/
 
 	}
+	fun registerWorldLoadListener() {// after world loaded
+		ServerLifecycleEvents.SERVER_STARTED.register { server: MinecraftServer ->
+			println("World has finished loading!")
+			val itemList = CreateItemList.getList() //what we will send to the Json Util; List of List<String>
+			JsonUtil.jsonExportList(itemList)
+		}
+	}
+
 }

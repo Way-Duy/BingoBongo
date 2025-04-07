@@ -7,7 +7,7 @@ class JsonUtil{
     companion object {
         //todo: creates/writes to the json file a list of items with some attributes
         //Mod name, item name, NBT list
-        fun jsonExportList(completeItemList: List<Item>?){
+        fun jsonExportList(completeItemList: MutableList<MutableList<String>>){
 
         }
 
