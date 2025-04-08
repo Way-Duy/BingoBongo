@@ -11,8 +11,18 @@ class Parser {
             // item ID: minecraft:cobbled_deepslate
             // return only:
             // cobbled_deepslate
-
-            return itemID.toString()
+            var itemIDString = itemID.toString()
+            // from index 0, search for first ':' and return the following as a string
+            for ((index, char) in itemIDString.withIndex())
+            {
+                if (char == ':')
+                {
+                    itemIDString= itemIDString.substring(index+1,itemIDString.length)
+                    break
+                }
+            }
+            println("ItemID Only: $itemIDString")
+            return itemIDString
         }
 
         fun getItemModName(itemID: Identifier): String {
@@ -20,7 +30,18 @@ class Parser {
             // item ID: minecraft:cobbled_deepslate
             // return only:
             // minecraft
-            return itemID.toString()
+            var modNameString = itemID.toString()
+            // from index 0, search for first ':' and return what precedes as a string
+            for ((index, char) in modNameString.withIndex())
+            {
+                if (char == ':')
+                {
+                    modNameString= modNameString.substring(0,index)
+                    break
+                }
+            }
+            println("ModName Only: $modNameString")
+            return modNameString
         }
         fun getTagName(tagListElement: TagKey<Item>): String{
             //example tagKey:
@@ -29,8 +50,18 @@ class Parser {
             //TagKey[minecraft:item / minecraft:stone_tool_materials]
             //return only:
             //stone_tool_materials
-            println(tagListElement)
-            return tagListElement.toString()
+            var tagString = tagListElement.toString()
+
+            // from the index.length(), search for first ':' (going backwards)
+            // and return the ending as a string except the 1st index
+            for (index in tagString.length - 1 downTo 0) {
+                if (tagString[index] == ':') {
+                    tagString = tagString.substring(index+1,tagString.length-1)
+                    break
+                }
+            }
+            println("Tag name only: $tagString")
+            return tagString
         }
     }
 }
