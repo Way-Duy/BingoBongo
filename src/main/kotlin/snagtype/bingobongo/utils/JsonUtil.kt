@@ -14,6 +14,7 @@ class JsonUtil{
         private var jsonDirectory: File? = null
         private const val JSON_FILE_NAME = "\\ItemList.json"
         private val tagBlacklist: List<String> = mutableListOf("tools, breaks_decorated_blocks, foods")
+        private val modBlacklist: List<String>? = null
         //todo: creates/writes to the json file a list of items with some attributes
         // following this format
         // {
