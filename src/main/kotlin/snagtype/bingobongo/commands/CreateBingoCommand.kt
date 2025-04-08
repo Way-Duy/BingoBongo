@@ -42,9 +42,8 @@ class CreateBingoCommand
             itemList
         ) // need itemforge list of 25 items
 
-        //thread issue here? went from being overloaded to having none somehow
-        //val bingoAdvancementPageThread: Thread = Thread(process)
-        //this.startService("BingoMod Creating Advancements Page", bingoAdvancementPageThread)
+        val bingoAdvancementPageThread: Thread = Thread(process)
+        this.startService("BingoMod Creating Advancements Page", bingoAdvancementPageThread)
 
         BingoBongo.logger.info( "Bingo Card generated in Advancements")
     }
