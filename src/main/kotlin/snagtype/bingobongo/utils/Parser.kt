@@ -3,6 +3,7 @@ package snagtype.bingobongo.utils
 import net.minecraft.item.Item
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
+import snagtype.bingobongo.BingoBongo
 
 class Parser {
     companion object {
@@ -21,7 +22,7 @@ class Parser {
                     break
                 }
             }
-            println("ItemID Only: $itemIDString")
+            BingoBongo.logger.info("ItemID Only: $itemIDString")
             return itemIDString
         }
 
@@ -40,7 +41,7 @@ class Parser {
                     break
                 }
             }
-            println("ModName Only: $modNameString")
+            BingoBongo.logger.info("ModName Only: $modNameString")
             return modNameString
         }
         fun getTagName(tagListElement: TagKey<Item>): String{
@@ -60,7 +61,7 @@ class Parser {
                     break
                 }
             }
-            println("Tag name only: $tagString")
+            BingoBongo.logger.info("Tag name only: $tagString")
             return tagString
         }
     }
