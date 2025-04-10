@@ -9,7 +9,6 @@ import net.minecraft.registry.Registries
 import net.minecraft.server.MinecraftServer
 import snagtype.bingobongo.BingoBongo
 import snagtype.bingobongo.utils.JsonUtil
-import snagtype.bingobongo.utils.ListRandomizer
 import java.io.File
 import java.nio.file.Paths
 import java.util.*
@@ -29,6 +28,8 @@ class CreateBingoCommand
         aliases = ArrayList<Any?>()
         advancementDirectory = File( Paths.get("").toAbsolutePath().toString() + ADVANCEMENT_DIRECTORY_SUFFIX)
         BingoBongo.logger.info("Advancement Directory: "+ advancementDirectory.toString())
+        //testing
+        JsonUtil.getRandomItemListExcludingLargeTags(25,10)
 
     }
     // not sure why we had this....
@@ -36,11 +37,11 @@ class CreateBingoCommand
 
     @Throws(CommandException::class)
      fun execute(server: MinecraftServer?, args: Array<String?>?) {
-        itemList = ListRandomizer.getRandomItemList(JsonUtil.jsonImportList(), DEFAULT_BINGO_ITEMS)
+        itemList = JsonUtil.getRandomItemListWithoutTags(DEFAULT_BINGO_ITEMS)
         val process: BingoAdvancementPage = BingoAdvancementPage(
             this.advancementDirectory,
             itemList
-        ) // need itemforge list of 25 items
+        ) // need  list of 25 items
 
         val bingoAdvancementPageThread: Thread = Thread(process)
         this.startService("BingoMod Creating Advancements Page", bingoAdvancementPageThread)
