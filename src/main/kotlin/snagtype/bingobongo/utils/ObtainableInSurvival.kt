@@ -2,47 +2,106 @@ package snagtype.bingobongo.utils
 
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.loot.LootTable
+import net.minecraft.loot.LootManager
 import net.minecraft.server.MinecraftServer
-import net.minecraft.recipe.RecipeManager
 import net.minecraft.recipe.Recipe
 import net.minecraft.util.Identifier
 import net.minecraft.recipe.CraftingRecipe
 import net.minecraft.block.Block
 import net.minecraft.block.BlockState
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.inventory.CraftingInventory
+import net.minecraft.inventory.Inventory
+import net.minecraft.inventory.RecipeInputInventory
+import net.minecraft.inventory.SimpleInventory
+import net.minecraft.loot.LootDataType
+import net.minecraft.loot.entry.ItemEntry
+import net.minecraft.registry.Registries
+import net.minecraft.screen.ScreenHandler
+import snagtype.bingobongo.BingoBongo
+import java.lang.reflect.Field
 
 class ObtainableInSurvival {
-    /*
-    fun isItemInLootTable(item: Item): Boolean {
-        val lootTables: LootTable = MinecraftServer.getLootManager().getTable(item.id) // Get Loot Table by item ID
-        return lootTables.hasLootItem(item) // Check if the item is in any loot table
-    }
-    fun isItemInVillagerTrades(item: Item): Boolean {
-        for (profession in VillagerTrades.PROFESSION_TO_TRADES.keys) {
-            for (level in VillagerTrades.PROFESSION_TO_TRADES[profession]?.keys ?: emptyList()) {
-                val trades = VillagerTrades.PROFESSION_TO_TRADES[profession]?.get(level)
-                trades?.forEach { (trade) ->
-                    if (trade.output == item) {
-                        return true
+    companion object {
+        fun isInAnyLootTable(server: MinecraftServer, item: Item): Boolean {
+            val lootManager = server.lootManager
+            val lootTableIds = lootManager.getIds(LootDataType.LOOT_TABLES)
+
+            for (id in lootTableIds) {
+                val lootTable = lootManager.getElementOptional(LootDataType.LOOT_TABLES, id).orElse(null) ?: continue
+
+                for (pool in lootTable.pools) {
+                    for (entry in pool.entries) {
+                        if (entry is ItemEntry) {
+                            try {
+                                val itemField = ItemEntry::class.java.getDeclaredField("item")
+                                itemField.isAccessible = true
+                                val entryItem = itemField.get(entry) as? Item
+                                if (entryItem == item) {
+                                     BingoBongo.logger.info("Found ${item} in loot table $id")
+                                    return true
+                                }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
                     }
                 }
             }
+
+            return false
         }
-        return false
+        /*
+    fun isTradeable(item: Item): Boolean {
+        return VillagerProfession.values().any { profession ->
+            VillagerTrades.PROFESSION_TO_TRADES[profession]?.values?.flatten()?.any { trade ->
+                trade.output.item == item
+            } == true
+        }
     }
-    fun isItemInCraftingRecipes(item: Item): Boolean {
-        val recipes = RecipeManager.INSTANCE.recipes
-        return recipes.any { recipe ->
-            if (recipe is CraftingRecipe) {
-                recipe.recipeOutput == item
-            } else {
-                false
+
+     */
+
+        fun isCraftable(server: MinecraftServer, item: Item): Boolean {
+            val recipeManager = server.recipeManager
+            val world = server.overworld
+
+            // Create a dummy 3x3 crafting grid
+            val dummyInventory = CraftingInventory(
+                object : ScreenHandler(null, -1) {
+                    override fun canUse(player: PlayerEntity?): Boolean = false
+                    override fun quickMove(player: PlayerEntity, slot: Int): ItemStack {
+                        return ItemStack.EMPTY
+                    }
+                }, 3, 3
+            )
+
+            return recipeManager.values().any { recipe ->
+                if (recipe is Recipe<*>) {
+                    @Suppress("UNCHECKED_CAST")
+                    val typedRecipe = recipe as Recipe<RecipeInputInventory>
+
+                    try {
+                        val result = typedRecipe.craft(dummyInventory, world.registryManager)
+                        result.item == item
+                    } catch (e: Exception) {
+                        false // Catch crafting exceptions like missing ingredients
+                    }
+                } else {
+                    false
+                }
             }
         }
+
+
+        }
+        /*
+    fun isBlockDrop(item: Item): Boolean {
+        return Registries.BLOCK.iterator().asSequence().any { block ->
+            val drops = block.getDroppedStacks(block.defaultState, LootContext.Builder(null)) // Requires context
+            drops.any { it.item == item }
+        }
     }
-    fun isItemObtainedByBreakingBlock(block: Block): Boolean {
-        val drops: List<ItemStack> = block.getDroppedStacks(BlockState, null, LootContext.EMPTY)
-        return drops.any { it.item == item }  // Check if the item is a possible drop from the block
+     */
+
     }
-*/
-}

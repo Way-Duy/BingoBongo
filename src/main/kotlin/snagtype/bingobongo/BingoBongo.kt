@@ -41,6 +41,7 @@ object BingoBongo : ModInitializer {
 					1
 				})
 		})
+
 		//this will be moved to a command
 		fun toggleFreeSpace() {isFreeSpaceEnabled= !isFreeSpaceEnabled}
 
@@ -77,8 +78,8 @@ object BingoBongo : ModInitializer {
 	fun registerWorldLoadListener() {// after world loaded
 		ServerLifecycleEvents.SERVER_STARTED.register { server: MinecraftServer ->
 			println("World has finished loading!")
-			val itemList = CreateItemList.getList() //what we will send to the Json Util; List of List<String>
-			JsonUtil.jsonExportList(itemList)
+				val itemList = CreateItemList.getList(server) //what we will send to the Json Util; List of List<String>
+				JsonUtil.jsonExportList(itemList)
 		}
 	}
 
