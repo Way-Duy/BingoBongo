@@ -15,7 +15,7 @@ class CreateItemList {
             val itemList = mutableListOf<MutableList<String>>()
                 // Now you have the MinecraftServer instance
                 for (item in Registries.ITEM) {
-                    if ( !ObtainableInSurvival.isInAnyLootTable(server,item) && !ObtainableInSurvival.isCraftable(server,item))
+                    if ( !ObtainableInSurvival.isInAnyLootTable(server,item) && !ObtainableInSurvival.isCraftable(server,item)&& !ObtainableInSurvival.isDroppedFromBlocks(server,item))
                     {
                         BingoBongo.logger.info("not found in loot tables or crafting recipes: $item")
                         continue

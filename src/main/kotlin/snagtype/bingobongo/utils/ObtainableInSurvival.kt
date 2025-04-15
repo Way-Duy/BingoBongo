@@ -2,27 +2,20 @@ package snagtype.bingobongo.utils
 
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.loot.LootManager
 import net.minecraft.server.MinecraftServer
 import net.minecraft.recipe.Recipe
-import net.minecraft.util.Identifier
 import net.minecraft.block.Block
-import net.minecraft.block.BlockState
-import net.minecraft.village.TradeOffer
+import net.minecraft.block.Blocks
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.CraftingInventory
 import net.minecraft.inventory.RecipeInputInventory
 import net.minecraft.item.Items
 import net.minecraft.loot.LootDataType
-import net.minecraft.loot.context.LootContextParameterSet
-import net.minecraft.loot.context.LootContextParameters
-import net.minecraft.loot.context.LootContextTypes
 import net.minecraft.loot.entry.ItemEntry
 import net.minecraft.registry.Registries
 import net.minecraft.screen.ScreenHandler
-import net.minecraft.util.math.Vec3d
-import net.minecraft.util.math.random.Random
-import net.minecraft.village.TradeOffers
+import net.minecraft.util.math.BlockPos
 import snagtype.bingobongo.BingoBongo
 
 class ObtainableInSurvival {
@@ -82,6 +75,38 @@ class ObtainableInSurvival {
             return false
         }
         */
+
+        fun isDroppedFromBlocks(server: MinecraftServer, item: Item): Boolean {
+            val world = server.overworld
+            val blockPos = BlockPos.ORIGIN
+
+            for (block in Registries.BLOCK) {
+                if (block == Blocks.AIR) continue
+
+                val blockState = block.defaultState
+
+                // Try with normal tool (no enchantment)
+                val normalTool = ItemStack(Items.DIAMOND_PICKAXE)
+                val normalDrops = Block.getDroppedStacks(blockState, world, blockPos, null, null, normalTool)
+
+                // Try with Silk Touch
+                val silkTool = ItemStack(Items.DIAMOND_PICKAXE)
+                silkTool.addEnchantment(Enchantments.SILK_TOUCH, 1)
+                val silkDrops = Block.getDroppedStacks(blockState, world, blockPos, null, null, silkTool)
+
+                // Combine and check
+                val allDrops = normalDrops + silkDrops
+
+                for (stack in allDrops) {
+                    if (!stack.isEmpty && stack.item == item) {
+                        BingoBongo.logger.info("Item $item is dropped from block: ${block.name.string}")
+                        return true
+                    }
+                }
+            }
+
+            return false
+        }
         fun isCraftable(server: MinecraftServer, item: Item): Boolean {
             val recipeManager = server.recipeManager
             val world = server.overworld
@@ -103,6 +128,10 @@ class ObtainableInSurvival {
 
                     try {
                         val result = typedRecipe.craft(dummyInventory, world.registryManager)
+                        if(result.isEmpty)
+                        {
+                            BingoBongo.logger.info("air recipe: $recipe")
+                        }
                         if (!result.isEmpty && result.item == item) {
                             BingoBongo.logger.info("Item is craftable: $item")
                             true
@@ -120,35 +149,5 @@ class ObtainableInSurvival {
 
 
         }
-    /*
-    fun isDroppedFromBlocks(server: MinecraftServer, item: Item): Boolean {
-        val world = server.overworld
-        val lootManager = server.lootManager
-        val toolStack = ItemStack(Items.IRON_PICKAXE) // simulate breaking with an iron pickaxe
 
-        val parameterSet = LootContextParameterSet.Builder(world)
-            .add(LootContextParameters.TOOL, toolStack)
-            .add(LootContextParameters.ORIGIN, Vec3d.ZERO)
-            .build(LootContextTypes.BLOCK)
-
-        for (block in Registries.BLOCK) {
-            val lootTableId = block.lootTableId
-            val lootTable = lootManager.getLootTable(lootTableId)
-
-            val context = LootContext.Builder(parameterSet)
-                .random(Random.create())
-                .luck(0.0f) // you can simulate Fortune by adjusting luck or context
-                .build(LootContextTypes.BLOCK)
-
-            val drops = lootTable.generateLoot(context)
-
-            if (drops.any { it.item == item }) {
-                BingoBongo.logger.info("Item $item is dropped from block: ${Registries.BLOCK.getId(block)}")
-                return true
-            }
-        }
-
-        return false
-        }
-     */
     }
