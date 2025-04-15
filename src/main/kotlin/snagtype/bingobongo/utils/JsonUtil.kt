@@ -15,6 +15,7 @@ class JsonUtil{
     companion object {
         private var jsonDirectory: File? = null
         private const val JSON_FILE_NAME = "\\ItemList.json"
+        private const val ITEMS_NOT_FOUND_FILE_NAME = "\\UnobtainableItems.json"
         private val tagIgnorelist: List<String> = mutableListOf("tools, breaks_decorated_blocks, foods")
         private val modBlacklist: List<String>? = null
         private val file = File( Paths.get("").toAbsolutePath().toString()+JSON_FILE_NAME)
@@ -68,6 +69,42 @@ class JsonUtil{
         //    ],
         //}
         //Mod name, item name, NBT list
+        fun jsonExportItemsNotFound(completeItemList: MutableList<MutableList<String>>)
+        {
+            val gson = GsonBuilder().setPrettyPrinting().create()
+            val root = JsonObject()
+            val itemsObject = JsonObject()
+            val tagsObject = JsonObject()
+
+            val tagMap = mutableMapOf<String, MutableList<Pair<String, String>>>()
+
+            for (item in completeItemList) {
+                if (item.size >= 2) {
+                    val itemID = item[0]
+                    val modName = item[1]
+                    val hasTags = item.size > 2
+                    val tagList = item.drop(2)
+
+                    // Add to items
+                    val itemInfo = JsonObject()
+                    itemInfo.addProperty("itemID", itemID)
+                    itemInfo.addProperty("modName", modName)
+
+                    // Add tag fields (tag1, tag2, ...)
+                    for ((index, tagName) in tagList.withIndex()) {
+                        itemInfo.addProperty("tag${index + 1}", tagName)
+                    }
+                    val wrapperArray = JsonArray()
+                    wrapperArray.add(itemInfo)
+                    itemsObject.add(itemID, wrapperArray)
+
+                }
+            }
+            root.add("items", itemsObject)
+            jsonDirectory = File( Paths.get("").toAbsolutePath().toString()+ ITEMS_NOT_FOUND_FILE_NAME)
+            BingoBongo.logger.info(jsonDirectory.toString())
+            File(jsonDirectory.toString()).writeText(gson.toJson(root))
+        }
         fun jsonExportList(completeItemList: MutableList<MutableList<String>>){
             val gson = GsonBuilder().setPrettyPrinting().create()
             val root = JsonObject()

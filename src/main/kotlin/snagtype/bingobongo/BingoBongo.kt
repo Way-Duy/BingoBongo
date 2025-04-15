@@ -78,7 +78,9 @@ object BingoBongo : ModInitializer {
 	fun registerWorldLoadListener() {// after world loaded
 		ServerLifecycleEvents.SERVER_STARTED.register { server: MinecraftServer ->
 			println("World has finished loading!")
-				val itemList = CreateItemList.getList(server) //what we will send to the Json Util; List of List<String>
+				//val itemList = CreateItemList.getListBottomUp(server) //what we will send to the Json Util; List of List<String>
+				//change for testing all items.
+				val itemList = CreateItemList.getListForTesting(server)
 				JsonUtil.jsonExportList(itemList)
 		}
 	}

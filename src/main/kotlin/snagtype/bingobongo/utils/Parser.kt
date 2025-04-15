@@ -22,7 +22,7 @@ class Parser {
                     break
                 }
             }
-            BingoBongo.logger.info("ItemID Only: $itemIDString")
+            //BingoBongo.logger.info("ItemID Only: $itemIDString")
             return itemIDString
         }
 
@@ -41,7 +41,7 @@ class Parser {
                     break
                 }
             }
-            BingoBongo.logger.info("ModName Only: $modNameString")
+            //BingoBongo.logger.info("ModName Only: $modNameString")
             return modNameString
         }
         fun getTagName(tagListElement: TagKey<Item>): String{
@@ -61,7 +61,7 @@ class Parser {
                     break
                 }
             }
-            BingoBongo.logger.info("Tag name only: $tagString")
+            //BingoBongo.logger.info("Tag name only: $tagString")
             return tagString
         }
     }
