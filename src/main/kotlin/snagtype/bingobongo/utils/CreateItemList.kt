@@ -2,6 +2,7 @@ package snagtype.bingobongo.utils
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.block.Block
+import net.minecraft.block.BlockWithEntity
 import net.minecraft.block.Blocks
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.player.PlayerEntity
@@ -224,15 +225,22 @@ class CreateItemList {
                     for (entry in pool.entries) {
                         if (entry is ItemEntry) {
                             try {
-                                val itemField = ItemEntry::class.java.getDeclaredField("item")
-                                itemField.isAccessible = true
-                                val entryItem = itemField.get(entry) as? Item
-                                if (entryItem == item) {
-                                    BingoBongo.logger.info("Found ${item} in loot table $id")
-                                    return true
+                                val itemField = entry.javaClass.declaredFields.find { it.type == Item::class.java }
+                                itemField?.let {
+                                    //reflection that skips items that have been specially modified by other mods
+                                    // In a modded modpack, especially large ones, other mods or mixins may alter ItemEntry,
+                                    //which can completely remove or hide the item field.
+                                    it.isAccessible = true
+                                    val entryItem = it.get(entry) as? Item
+                                    if (entryItem == item) {
+                                        BingoBongo.logger.info("Found $item in loot table $id")
+                                        return true
+                                    }else {
+                                        BingoBongo.logger.debug("Skipping unknown loot entry type: ${entry.javaClass.name}")
+                                    }
                                 }
                             } catch (e: Exception) {
-                                e.printStackTrace()
+                                BingoBongo.logger.warn("Could not access item for loot entry: $entry in $id", e)
                             }
                         }
                     }
@@ -253,15 +261,20 @@ class CreateItemList {
 
                 // Try with normal tool (no enchantment)
                 val normalTool = ItemStack(Items.DIAMOND_PICKAXE)
-                val normalDrops = Block.getDroppedStacks(blockState, world, blockPos, null, null, normalTool)
-
+                val blockEntity = if (block is BlockWithEntity) block.createBlockEntity(blockPos, blockState) else null
+                val drops = try {
+                    Block.getDroppedStacks(blockState, world, blockPos, blockEntity, null, normalTool)
+                } catch (e: Exception) {
+                    BingoBongo.logger.warn("Failed to get drops for block ${block.name}: ${e.message}")
+                    emptyList()
+                }
                 // Try with Silk Touch
                 val silkTool = ItemStack(Items.DIAMOND_PICKAXE)
                 silkTool.addEnchantment(Enchantments.SILK_TOUCH, 1)
                 val silkDrops = Block.getDroppedStacks(blockState, world, blockPos, null, null, silkTool)
 
                 // Combine and check
-                val allDrops = normalDrops + silkDrops
+                val allDrops = drops + silkDrops
 
                 for (stack in allDrops) {
                     if (!stack.isEmpty && stack.item ==item) {
