@@ -29,8 +29,18 @@ class CreateItemList {
             addDroppedFromBlocks(server, itemList)
             addInAnyLootTable(server, itemList)
             addCraftable(server, itemList)
+            // creating not found list by cross-checking our itemList with every item in registry
+            val notFoundItemList = mutableListOf<MutableList<String>>()
+            for (item in Registries.ITEM) {
+                val itemStringList = itemToStringList(item)
+                if (!itemList.contains(itemStringList))
+                {
+                    notFoundItemList.add(itemStringList)
+                }
+            }
+            JsonUtil.jsonExportItemsNotFound(notFoundItemList)
 
-            return itemList
+        return itemList
         }
         fun itemToStringList(item: Item): MutableList<String>
         {
@@ -55,16 +65,32 @@ class CreateItemList {
                 if (block == Blocks.AIR) continue
 
                 val blockState = block.defaultState
-
-                // Try with normal tool (no enchantment)
                 val normalTool = ItemStack(Items.DIAMOND_PICKAXE)
-                val normalDrops = Block.getDroppedStacks(blockState, world, blockPos, null, null, normalTool)
+                val silkTool = ItemStack(Items.DIAMOND_PICKAXE).apply {
+                    addEnchantment(Enchantments.SILK_TOUCH, 1)
+                }
 
-                // Try with Silk Touch
-                val silkTool = ItemStack(Items.DIAMOND_PICKAXE)
-                silkTool.addEnchantment(Enchantments.SILK_TOUCH, 1)
-                val silkDrops = Block.getDroppedStacks(blockState, world, blockPos, null, null, silkTool)
+                val blockEntity = if (block is BlockWithEntity) {
+                    try {
+                        block.createBlockEntity(blockPos, blockState)
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else null
 
+                val normalDrops = try {
+                    Block.getDroppedStacks(blockState, world, blockPos, blockEntity, null, normalTool)
+                } catch (e: Exception) {
+                    //BingoBongo.logger.warn("Failed to get normal drops for block ${block.name}: ${e.message}")
+                    emptyList()
+                }
+
+                val silkDrops = try {
+                    Block.getDroppedStacks(blockState, world, blockPos, blockEntity, null, silkTool)
+                } catch (e: Exception) {
+                    //BingoBongo.logger.warn("Failed to get silk touch drops for block ${block.name}: ${e.message}")
+                    emptyList()
+                }
                 // Combine and check
                 val allDrops = normalDrops + silkDrops
 
@@ -135,15 +161,21 @@ class CreateItemList {
                     for (entry in pool.entries) {
                         if (entry is ItemEntry) {
                             try {
-                                val itemField = ItemEntry::class.java.getDeclaredField("item")
-                                itemField.isAccessible = true
-                                val entryItem = itemField.get(entry) as? Item
-                                    //add item to list ItemStrings, then check if its itemList
+                                val itemField = entry.javaClass.declaredFields.find { it.type == Item::class.java }
+                                itemField?.let {
+                                    //reflection that skips items that have been specially modified by other mods
+                                    // In a modded modpack, especially large ones, other mods or mixins may alter ItemEntry,
+                                    //which can completely remove or hide the item field.
+                                    it.isAccessible = true
+                                    val entryItem = it.get(entry) as? Item
                                     val itemStrings = itemToStringList(entryItem!!)
                                     if (!itemList.contains(itemStrings)){
                                         BingoBongo.logger.info("Found ${entryItem} in loot table $id")
                                         itemList.add(itemStrings)
+                                    }else {
+                                        //BingoBongo.logger.debug("Skipping unknown loot entry type: ${entry.javaClass.name}")
                                     }
+                                }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -237,11 +269,11 @@ class CreateItemList {
                                         BingoBongo.logger.info("Found $item in loot table $id")
                                         return true
                                     }else {
-                                        BingoBongo.logger.debug("Skipping unknown loot entry type: ${entry.javaClass.name}")
+                                        //BingoBongo.logger.debug("Skipping unknown loot entry type: ${entry.javaClass.name}")
                                     }
                                 }
                             } catch (e: Exception) {
-                                BingoBongo.logger.warn("Could not access item for loot entry: $entry in $id", e)
+                                //BingoBongo.logger.warn("Could not access item for loot entry: $entry in $id", e)
                             }
                         }
                     }
@@ -254,7 +286,6 @@ class CreateItemList {
         fun isDroppedFromBlocks(server: MinecraftServer, item: Item): Boolean {
             val world = server.overworld
             val blockPos = BlockPos.ORIGIN
-            val lootManager = world.server.lootManager
 
             for (block in Registries.BLOCK) {
                 if (block == Blocks.AIR) continue
@@ -277,14 +308,14 @@ class CreateItemList {
                 val normalDrops = try {
                     Block.getDroppedStacks(blockState, world, blockPos, blockEntity, null, normalTool)
                 } catch (e: Exception) {
-                    BingoBongo.logger.warn("Failed to get normal drops for block ${block.name}: ${e.message}")
+                    //BingoBongo.logger.warn("Failed to get normal drops for block ${block.name}: ${e.message}")
                     emptyList()
                 }
 
                 val silkDrops = try {
                     Block.getDroppedStacks(blockState, world, blockPos, blockEntity, null, silkTool)
                 } catch (e: Exception) {
-                    BingoBongo.logger.warn("Failed to get silk touch drops for block ${block.name}: ${e.message}")
+                    //BingoBongo.logger.warn("Failed to get silk touch drops for block ${block.name}: ${e.message}")
                     emptyList()
                 }
 
