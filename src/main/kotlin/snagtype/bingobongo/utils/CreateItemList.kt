@@ -12,6 +12,7 @@ import net.minecraft.item.*
 import net.minecraft.registry.Registries
 import snagtype.bingobongo.BingoBongo
 import net.minecraft.loot.LootDataType
+import net.minecraft.loot.context.LootContextParameters
 import net.minecraft.loot.entry.ItemEntry
 import net.minecraft.recipe.Recipe
 import net.minecraft.screen.ScreenHandler
@@ -253,31 +254,44 @@ class CreateItemList {
         fun isDroppedFromBlocks(server: MinecraftServer, item: Item): Boolean {
             val world = server.overworld
             val blockPos = BlockPos.ORIGIN
+            val lootManager = world.server.lootManager
 
             for (block in Registries.BLOCK) {
                 if (block == Blocks.AIR) continue
 
                 val blockState = block.defaultState
 
-                // Try with normal tool (no enchantment)
                 val normalTool = ItemStack(Items.DIAMOND_PICKAXE)
-                val blockEntity = if (block is BlockWithEntity) block.createBlockEntity(blockPos, blockState) else null
-                val drops = try {
+                val silkTool = ItemStack(Items.DIAMOND_PICKAXE).apply {
+                    addEnchantment(Enchantments.SILK_TOUCH, 1)
+                }
+
+                val blockEntity = if (block is BlockWithEntity) {
+                    try {
+                        block.createBlockEntity(blockPos, blockState)
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else null
+
+                val normalDrops = try {
                     Block.getDroppedStacks(blockState, world, blockPos, blockEntity, null, normalTool)
                 } catch (e: Exception) {
-                    BingoBongo.logger.warn("Failed to get drops for block ${block.name}: ${e.message}")
+                    BingoBongo.logger.warn("Failed to get normal drops for block ${block.name}: ${e.message}")
                     emptyList()
                 }
-                // Try with Silk Touch
-                val silkTool = ItemStack(Items.DIAMOND_PICKAXE)
-                silkTool.addEnchantment(Enchantments.SILK_TOUCH, 1)
-                val silkDrops = Block.getDroppedStacks(blockState, world, blockPos, null, null, silkTool)
 
-                // Combine and check
-                val allDrops = drops + silkDrops
+                val silkDrops = try {
+                    Block.getDroppedStacks(blockState, world, blockPos, blockEntity, null, silkTool)
+                } catch (e: Exception) {
+                    BingoBongo.logger.warn("Failed to get silk touch drops for block ${block.name}: ${e.message}")
+                    emptyList()
+                }
+
+                val allDrops = normalDrops + silkDrops
 
                 for (stack in allDrops) {
-                    if (!stack.isEmpty && stack.item ==item) {
+                    if (!stack.isEmpty && stack.item == item) {
                         BingoBongo.logger.info("Item $item is dropped from block: ${block.name.string}")
                         return true
                     }
