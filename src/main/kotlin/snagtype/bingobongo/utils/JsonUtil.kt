@@ -324,7 +324,7 @@ class JsonUtil{
             // Shuffle and pick bingoSize number of unique items
             result.addAll(allChoices.shuffled().take(bingoSize).map { it() })
 
-            BingoBongo.logger.info(allChoices.toString())
+            //BingoBongo.logger.info(allChoices.toString())
 
             return result
         }

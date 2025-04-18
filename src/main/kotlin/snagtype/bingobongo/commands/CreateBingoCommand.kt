@@ -37,7 +37,7 @@ class CreateBingoCommand
 
     @Throws(CommandException::class)
      fun execute(server: MinecraftServer?, args: Array<String?>?) {
-        itemList = JsonUtil.getRandomItemListWithoutTags(DEFAULT_BINGO_ITEMS)
+        //itemList = JsonUtil.getRandomItemListWithoutTags(DEFAULT_BINGO_ITEMS)
         val process: BingoAdvancementPage = BingoAdvancementPage(
             this.advancementDirectory,
             itemList
