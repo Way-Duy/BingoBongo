@@ -1,12 +1,29 @@
 package snagtype.bingobongo.utils
 
 import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
+import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import snagtype.bingobongo.BingoBongo
 
 class Parser {
     companion object {
+
+        fun itemToStringList(item: Item): MutableList<String>
+        {
+            val itemStrings = mutableListOf<String>()
+            val itemID = Registries.ITEM.getId(item) // itemId format: "ModName:ItemName
+            itemStrings.add(getItemName(itemID)) // element 0 = item name
+            itemStrings.add(getItemModName(itemID)) //element 1 = mod name
+            val itemStack = ItemStack(item)
+            val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
+
+            for (tagListItem in tagList.listIterator()) {
+                itemStrings.add(Parser.getTagName(tagListItem)) // element 1 + x = associated tag names
+            }
+            return itemStrings
+        }
         fun getItemName(itemID: Identifier): String {
             // example itemID:
             // item ID: minecraft:cobbled_deepslate

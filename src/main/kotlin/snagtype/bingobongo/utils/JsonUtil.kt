@@ -17,7 +17,6 @@ class JsonUtil{
         private const val JSON_FILE_NAME = "\\ItemList.json"
         private const val ITEMS_NOT_FOUND_FILE_NAME = "\\UnobtainableItems.json"
         private val tagIgnorelist: List<String> = mutableListOf("tools, breaks_decorated_blocks, foods")
-        private val modBlacklist: List<String>? = null
         private val file = File( Paths.get("").toAbsolutePath().toString()+JSON_FILE_NAME)
         //todo: account for any blacklists
 

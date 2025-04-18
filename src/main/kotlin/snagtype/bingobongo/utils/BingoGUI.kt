@@ -4,7 +4,7 @@ import dev.isxander.yacl3.api.ConfigCategory
 import dev.isxander.yacl3.api.YetAnotherConfigLib
 import dev.isxander.yacl3.api.Option
 import dev.isxander.yacl3.gui.YACLScreen
-import net.minecraft.client.gui.screen.Screen
+//import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 
 class BingoGUI {

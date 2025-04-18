@@ -32,7 +32,7 @@ class CreateItemList {
             // creating not found list by cross-checking our itemList with every item in registry
             val notFoundItemList = mutableListOf<MutableList<String>>()
             for (item in Registries.ITEM) {
-                val itemStringList = itemToStringList(item)
+                val itemStringList = Parser.itemToStringList(item)
                 if (!itemList.contains(itemStringList))
                 {
                     notFoundItemList.add(itemStringList)
@@ -42,20 +42,7 @@ class CreateItemList {
 
         return itemList
         }
-        fun itemToStringList(item: Item): MutableList<String>
-        {
-            val itemStrings = mutableListOf<String>()
-            val itemID = Registries.ITEM.getId(item) // itemId format: "ModName:ItemName
-            itemStrings.add(Parser.getItemName(itemID)) // element 0 = item name
-            itemStrings.add(Parser.getItemModName(itemID)) //element 1 = mod name
-            val itemStack = ItemStack(item)
-            val tagList = itemStack.streamTags().toList() // gets a list of tags for each item
 
-            for (tagListItem in tagList.listIterator()) {
-                itemStrings.add(Parser.getTagName(tagListItem)) // element 1 + x = associated tag names
-            }
-            return itemStrings
-        }
 
         fun addDroppedFromBlocks(server: MinecraftServer, itemList: MutableList<MutableList<String>> ) {
             val world = server.overworld
@@ -97,7 +84,7 @@ class CreateItemList {
                 for (stack in allDrops) {
                     if (!stack.isEmpty) {
                         //add item to list ItemStrings, then check if its itemList
-                        val itemStrings = itemToStringList(stack.item)
+                        val itemStrings = Parser.itemToStringList(stack.item)
                         if (!itemList.contains(itemStrings)){
                             itemList.add(itemStrings)
                             BingoBongo.logger.info("Item "+ stack.item + " is dropped from block: ${block.name.string}")
@@ -130,7 +117,7 @@ class CreateItemList {
                         val result = typedRecipe.craft(dummyInventory, world.registryManager)
                         if (!result.isEmpty) {
                             //add item to list ItemStrings, then check if its itemList
-                            val itemStrings = itemToStringList(result.item)
+                            val itemStrings = Parser.itemToStringList(result.item)
                             if (!itemList.contains(itemStrings)){
                                 BingoBongo.logger.info("Item is craftable: "+ result.item)
                                 itemList.add(itemStrings)
@@ -168,7 +155,7 @@ class CreateItemList {
                                     //which can completely remove or hide the item field.
                                     it.isAccessible = true
                                     val entryItem = it.get(entry) as? Item
-                                    val itemStrings = itemToStringList(entryItem!!)
+                                    val itemStrings = Parser.itemToStringList(entryItem!!)
                                     if (!itemList.contains(itemStrings)){
                                         BingoBongo.logger.info("Found ${entryItem} in loot table $id")
                                         itemList.add(itemStrings)
@@ -194,12 +181,12 @@ class CreateItemList {
             for (item in Registries.ITEM) {
                 if ( !isInAnyLootTable(server,item) && !isCraftable(server,item)&& !isDroppedFromBlocks(server,item))
                 {
-                    notFoundItemList.add(itemToStringList(item))
+                    notFoundItemList.add(Parser.itemToStringList(item))
                     continue
                 }
                 // every itemList element is a list of itemStrings for a particular itemID
 
-                val itemStrings = itemToStringList(item)
+                val itemStrings = Parser.itemToStringList(item)
                 itemList.add(itemStrings)
             }
             JsonUtil.jsonExportItemsNotFound(notFoundItemList)
