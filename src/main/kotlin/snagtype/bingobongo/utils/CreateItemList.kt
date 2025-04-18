@@ -12,7 +12,6 @@ import net.minecraft.item.*
 import net.minecraft.registry.Registries
 import snagtype.bingobongo.BingoBongo
 import net.minecraft.loot.LootDataType
-import net.minecraft.loot.context.LootContextParameters
 import net.minecraft.loot.entry.ItemEntry
 import net.minecraft.recipe.Recipe
 import net.minecraft.screen.ScreenHandler
@@ -26,9 +25,9 @@ class CreateItemList {
         fun getListBottomUp(server: MinecraftServer): MutableList<MutableList<String>> {
             val itemList = mutableListOf<MutableList<String>>()
             // every itemList element is a list of itemStrings for a particular itemID
+            addCraftable(server, itemList)
             addDroppedFromBlocks(server, itemList)
             addInAnyLootTable(server, itemList)
-            addCraftable(server, itemList)
             // creating not found list by cross-checking our itemList with every item in registry
             val notFoundItemList = mutableListOf<MutableList<String>>()
             for (item in Registries.ITEM) {
@@ -108,29 +107,22 @@ class CreateItemList {
                 }, 3, 3
             )
 
-                 recipeManager.values().any { recipe ->
+            for (recipe in recipeManager.values()) {
                 if (recipe is Recipe<*>) {
                     @Suppress("UNCHECKED_CAST")
                     val typedRecipe = recipe as Recipe<RecipeInputInventory>
-
                     try {
                         val result = typedRecipe.craft(dummyInventory, world.registryManager)
                         if (!result.isEmpty) {
-                            //add item to list ItemStrings, then check if its itemList
                             val itemStrings = Parser.itemToStringList(result.item)
-                            if (!itemList.contains(itemStrings)){
-                                BingoBongo.logger.info("Item is craftable: "+ result.item)
+                            if (!itemList.contains(itemStrings)) {
+                                BingoBongo.logger.info("Item is craftable: ${result.item}")
                                 itemList.add(itemStrings)
                             }
-                            true
-                        }else {
-                            false
                         }
                     } catch (e: Exception) {
-                        false // Catch crafting exceptions like missing ingredients
+                        // Silently catch and continue
                     }
-                } else {
-                    false
                 }
             }
             return itemList
@@ -215,10 +207,12 @@ class CreateItemList {
 
                     try {
                         val result = typedRecipe.craft(dummyInventory, world.registryManager)
+                        /*
                         if(result.isEmpty)
                         {
                             //BingoBongo.logger.info("air recipe: $recipe")
                         }
+                         */
                         if (!result.isEmpty && result.item == item) {
                             BingoBongo.logger.info("Item is craftable: $item")
                             true
@@ -318,6 +312,7 @@ class CreateItemList {
 
             return false
         }
+
         /*
         fun isTradeable(item: Item): Boolean {
             // Iterate through each profession's trades

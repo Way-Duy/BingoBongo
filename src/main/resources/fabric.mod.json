@@ -15,6 +15,7 @@
 	"icon": "assets/bingobongo/icon.png",
 	"environment": "*",
 	"entrypoints": {
+
 		"main": [
 			{
 				"value": "snagtype.bingobongo.BingoBongo",
@@ -23,6 +24,7 @@
 		],
 		"client": [
 			{
+				"modmenu": "com.mymod.config.ModMenuIntegration",
 				"value": "snagtype.bingobongo.BingoBongoClient",
 				"adapter": "kotlin"
 			}
