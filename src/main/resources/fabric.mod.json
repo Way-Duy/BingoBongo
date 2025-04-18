@@ -2,10 +2,12 @@
 	"schemaVersion": 1,
 	"id": "bingobongo",
 	"version": "${version}",
-	"name": "bingo bongo",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Bingo Bongo",
+	"description": "Modded Minecraft Bingo! Create your Bingo Here!",
 	"authors": [
-		"Me!"
+		"Way",
+		"Cpapa97",
+		"Boijangle"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -24,8 +26,13 @@
 		],
 		"client": [
 			{
-				"modmenu": "com.mymod.config.ModMenuIntegration",
 				"value": "snagtype.bingobongo.BingoBongoClient",
+				"adapter": "kotlin"
+			}
+		],
+		"modmenu": [
+			{
+				"value": "snagtype.bingobongo.gui.BingoGUI",
 				"adapter": "kotlin"
 			}
 		]
