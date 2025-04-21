@@ -1,123 +1,81 @@
 package snagtype.bingobongo.gui
-import com.terraformersmc.modmenu.api.ModMenuApi
-import com.terraformersmc.modmenu.api.ConfigScreenFactory
-import dev.isxander.yacl3.api.*
-import dev.isxander.yacl3.api.controller.BooleanControllerBuilder
-import dev.isxander.yacl3.api.controller.ControllerBuilder
-import dev.isxander.yacl3.api.Option
-import dev.isxander.yacl3.gui.YACLScreen
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.text.Text
 import net.minecraft.client.gui.DrawContext
-import java.util.function.Consumer
+import net.minecraft.text.Text
+import net.minecraft.client.gui.widget.*
 
-class BingoGUI : ModMenuApi {
-    override fun getModConfigScreenFactory(): ConfigScreenFactory<Screen> {
-        return ConfigScreenFactory { parent ->
-            val builder = YetAnotherConfigLib.createBuilder()
-                .title(Text.literal("BingoSheet"))
-                .save {} // no-op
+class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
+    private lateinit var freeSpaceCheckbox: CheckboxWidget
+    private lateinit var randomRewardsCheckbox: CheckboxWidget
 
-// --- Single Category: Settings ---
-            val settingsCategory = ConfigCategory.createBuilder()
-                .name(Text.literal("Settings"))
+    private var mode = "line"
 
-// Enable Free Space Option
-            val freeSpaceOption = Option.createBuilder<Boolean>()
-                .name(Text.literal("Enable Free Space"))
-                .binding(true, { true }, { })
-                .controller { BooleanControllerBuilder.create(it) }
-                .build()
+    override fun init() {
+        val columnWidth = width / 2 - 40
+        val columnSpacing = 20
+        val widgetHeight = 20
+        val spacing = 30
 
-// Enable Random Rewards Option
-            val randomRewardsOption = Option.createBuilder<Boolean>()
-                .name(Text.literal("Enable Random Rewards"))
-                .binding(true, { true }, { })
-                .controller { BooleanControllerBuilder.create(it) }
-                .build()
+        val leftX = 20
+        val rightX = width / 2 + columnSpacing
+        var leftY = 60
+        var rightY = 90
 
-// Generate Button
-            val generateButton = ButtonOption.createBuilder()
-                .name(Text.literal("Generate"))
-                .action { screen: YACLScreen, button: ButtonOption ->
-                    println("Generate clicked")
-                }  // Using BiConsumer with the correct parameters
-                .build()
+        // --- LEFT COLUMN ---
 
-// Finalize Button
-            val finalizeButton = ButtonOption.createBuilder()
-                .name(Text.literal("Finalize"))
-                .action { screen: YACLScreen, button: ButtonOption ->
-                    println("Finalize clicked")
-                }  // Using BiConsumer with the correct parameters
-                .build()
+        //Free Space Checkbox
+        freeSpaceCheckbox = CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Free Space"), true)
+        addDrawableChild(freeSpaceCheckbox)
+        leftY += spacing
 
-// Create a dummy option for the preview
-            val previewPlaceholder = Option.createBuilder<Boolean>()
-                .name(Text.literal("▼ Preview Area ▼")) // Visually indicates the preview box area
-                .binding(false, { false }, { })          // No real state
-                .controller { BooleanControllerBuilder.create(it) } // Just creates a toggle, we ignore its use
-                .build()
-            /*possible icon preview solution
-                      val iconButton = TexturedButtonWidget(
-                          x, y, width, height,
-                          0, 0, 20, 20, // Texture coordinates for the image
-                          Identifier("mymod:textures/gui/icon.png") // Your icon path
-                      ) {
-                          println("Button with icon clicked")
-                      }
-                       */
+        //Random Rewards  Checkbox
+        randomRewardsCheckbox = CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Random Rewards"), true)
+        addDrawableChild(randomRewardsCheckbox)
+        leftY += spacing
 
-// --- Mode Selection ---
-            var mode = "line"
+        //Generate Button
+        addDrawableChild(ButtonWidget.builder(Text.literal("Generate")) {
+            println("Generate clicked")
+        }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
+        leftY += spacing
 
-// Blackout Toggle
-            val blackoutToggle = Option.createBuilder<Boolean>()
-                .name(Text.literal("Blackout"))
-                .binding(false, { mode == "blackout" }, { selected ->
-                    if (selected) {
-                        mode = "blackout"
-                    }
-                })
-                .controller { BooleanControllerBuilder.create(it) }
-                .build()
+        //Finalize Button
+        addDrawableChild(ButtonWidget.builder(Text.literal("Finalize")) {
+            println("Finalize clicked")
+        }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
+        leftY += spacing
 
-// Line Toggle
-            val lineToggle = Option.createBuilder<Boolean>()
-                .name(Text.literal("Line"))
-                .binding(true, { mode == "line" }, { selected ->
-                    if (selected) {
-                        mode = "line"
-                    }
-                })
-                .controller { BooleanControllerBuilder.create(it) }
-                .build()
+        // Options button
+        addDrawableChild(ButtonWidget.builder(Text.literal("Options")) {
+            println("Options clicked")
+        }.dimensions(width - 110, height - 30, 100, 20).build())
 
-// Options Button
-            val optionsButton = ButtonOption.createBuilder()
-                .name(Text.literal("Options"))
-                .action { screen: YACLScreen, button: ButtonOption ->
-                    println("Options clicked")
-                }  // Using BiConsumer with the correct parameters
-                .build()
+        // --- RIGHT COLUMN ---
 
-// Add all options to the category, visually split into two columns
-            settingsCategory
-                .option(freeSpaceOption)
-                .option(randomRewardsOption)
-                .option(generateButton)
-                .option(previewPlaceholder)
-                .option(finalizeButton)
-                .option(blackoutToggle)
-                .option(lineToggle)
-                .option(optionsButton)
+        val modeLabel = TextWidget(Text.literal("Mode"), textRenderer)
+        modeLabel.x = rightX + (columnWidth - textRenderer.getWidth(modeLabel.message)) / 2
+        modeLabel.y = rightY - spacing
+        addDrawableChild(modeLabel)
 
-// Set the category to the builder
-            builder.category(settingsCategory.build())
+        //blackout Button
+        addDrawableChild(ButtonWidget.builder(Text.literal("Blackout")) {
+            mode = "blackout"
+            println("Mode set to blackout")
+        }.dimensions(rightX, rightY, columnWidth, widgetHeight).build())
+        rightY += spacing
 
-// Generate screen
-            builder.build().generateScreen(parent)
+        //Line Button
+        addDrawableChild(ButtonWidget.builder(Text.literal("Line")) {
+            mode = "line"
+            println("Mode set to line")
+        }.dimensions(rightX, rightY, columnWidth, widgetHeight).build())
+    }
 
-        }
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        renderBackground(context)
+        val title = Text.literal("Generate Bingo")
+        val titleX = (width - textRenderer.getWidth(title)) / 2
+        context.drawText(textRenderer, title, titleX, 20, 0xFFFFFF, false)
+        super.render(context, mouseX, mouseY, delta)
     }
 }

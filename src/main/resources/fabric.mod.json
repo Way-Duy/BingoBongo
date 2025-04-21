@@ -29,12 +29,6 @@
 				"value": "snagtype.bingobongo.BingoBongoClient",
 				"adapter": "kotlin"
 			}
-		],
-		"modmenu": [
-			{
-				"value": "snagtype.bingobongo.gui.BingoGUI",
-				"adapter": "kotlin"
-			}
 		]
 	},
 	"mixins": [
