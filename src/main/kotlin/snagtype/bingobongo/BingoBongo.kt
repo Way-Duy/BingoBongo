@@ -4,8 +4,6 @@ import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.CommandRegistryAccess
-import net.minecraft.item.ItemStack
-import net.minecraft.registry.Registries
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.CommandManager
@@ -13,10 +11,10 @@ import net.minecraft.server.command.CommandManager.RegistrationEnvironment
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import org.slf4j.LoggerFactory
-import snagtype.bingobongo.commands.CreateBingoCommand
+import snagtype.bingobongo.utils.GenerateBingo
+import snagtype.bingobongo.config.BingoSettings
 import snagtype.bingobongo.utils.CreateItemList
 import snagtype.bingobongo.utils.JsonUtil
-import snagtype.bingobongo.utils.Parser
 
 
 object BingoBongo : ModInitializer {
@@ -26,6 +24,7 @@ object BingoBongo : ModInitializer {
 
 
 	override fun onInitialize() {
+		BingoSettings.load()
 		 CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource?>, registryAccess: CommandRegistryAccess?, environment: RegistrationEnvironment? ->
 			dispatcher.register(
 				CommandManager.literal("CreateBingoCommand").executes { context: CommandContext<ServerCommandSource> ->
@@ -36,7 +35,7 @@ object BingoBongo : ModInitializer {
 						false
 					)
 					logger.info("Before Command Init")
-					CreateBingoCommand();
+					GenerateBingo();
 					logger.info("After Command Init")
 					1
 				})

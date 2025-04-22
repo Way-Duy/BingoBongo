@@ -2,6 +2,7 @@ plugins {
 	id 'fabric-loom' version '1.10-SNAPSHOT'
 	id 'maven-publish'
 	id "org.jetbrains.kotlin.jvm" version "2.1.10"
+	id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.10'
 }
 
 version = project.mod_version
@@ -41,6 +42,9 @@ loom {
 
 dependencies {
 	// To change the versions see the gradle.properties file
+
+	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"

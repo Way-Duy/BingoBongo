@@ -221,7 +221,7 @@ class JsonUtil{
                 }
 
                 val item = Registries.ITEM.get(Identifier.tryParse(itemID) ?: continue)
-                BingoBongo.logger.info(item.toString())
+                //BingoBongo.logger.info(item.toString())
                 selectedItems.add(item)
             }
 
@@ -247,7 +247,7 @@ class JsonUtil{
             while (selectedItems.size < bingoSize && itemPool.isNotEmpty()) {
                 val randItem = itemPool.random()
                 val item = Registries.ITEM.get(Identifier.tryParse(randItem) ?: continue)
-                BingoBongo.logger.info(item.toString())
+                //BingoBongo.logger.info(item.toString())
                 selectedItems.add(item)
             }
 
@@ -296,11 +296,11 @@ class JsonUtil{
                 val tagItems = mutableListOf<Item>()
                 val tagEntries = tagArray.asJsonArray
                 if (tagEntries.size() > tagLimit) {
-                    BingoBongo.logger.info(("excluded tags: $tagName"))
+                    //BingoBongo.logger.info(("excluded tags: $tagName"))
                     continue
                 }
 
-                BingoBongo.logger.info(("included tags: $tagName"))
+                //BingoBongo.logger.info(("included tags: $tagName"))
 
                 for (itemObj in tagEntries) {
                     val innerItemId = (itemObj.asJsonObject.entrySet().first().key)
@@ -323,8 +323,6 @@ class JsonUtil{
 
             // Shuffle and pick bingoSize number of unique items
             result.addAll(allChoices.shuffled().take(bingoSize).map { it() })
-
-            BingoBongo.logger.info(allChoices.toString())
 
             return result
         }

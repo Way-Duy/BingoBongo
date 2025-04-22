@@ -9,6 +9,9 @@ import net.minecraft.client.gui.widget.*
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.CyclingButtonWidget
 import net.minecraft.client.MinecraftClient
+import snagtype.bingobongo.utils.GenerateBingo
+import snagtype.bingobongo.config.BingoSettings
+import snagtype.bingobongo.config.TagOption
 
 class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
     private lateinit var freeSpaceCheckbox: CheckboxWidget
@@ -30,19 +33,34 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
 
         // --- LEFT COLUMN ---
 
-        //Free Space Checkbox
-        freeSpaceCheckbox = CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Free Space"), true)
+        val freeSpaceCheckbox = object : CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Free Space"), BingoSettings.config.enableFreeSpace) {
+            override fun onPress() {
+                super.onPress() // Call the original onPress functionality
+                // Toggle the value whenever the checkbox is clicked
+                BingoSettings.config.enableFreeSpace = !BingoSettings.config.enableFreeSpace
+                BingoSettings.save() // Optionally save after the change
+            }
+        }
         addDrawableChild(freeSpaceCheckbox)
-        leftY += spacing
+
+        leftY += spacing // Adjust the position for the next widget
 
         //Random Rewards  Checkbox
-        randomRewardsCheckbox = CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Random Rewards"), true)
+        val randomRewardsCheckbox = object : CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Random Rewards"), BingoSettings.config.enableFreeSpace) {
+            override fun onPress() {
+                super.onPress() // Call the original onPress functionality
+                // Toggle the value whenever the checkbox is clicked
+                BingoSettings.config.enableRandomRewards = !BingoSettings.config.enableRandomRewards
+                BingoSettings.save() // Optionally save after the change
+            }
+        }
         addDrawableChild(randomRewardsCheckbox)
-        leftY += spacing
+        leftY += spacing // Adjust the position for the next widget
 
         //Generate Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Generate")) {
             println("Generate clicked")
+            GenerateBingo();
         }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
         leftY += spacing
 
@@ -111,10 +129,14 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
         )
 
         val buttonActions = listOf(
-            { println("Tag Option getRandomItemListWithTags clicked") },
-            { println("Tag Option getRandomItemListWithoutTags clicked") },
-            { println("Tag Option getRandomItemListExcludingLargeTags clicked") },
-            { println("Tag Option getRandomItemListWithWeightedTags clicked") }
+            { BingoSettings.config.tagOption = TagOption.TAGS
+                println("Tag Option getRandomItemListWithTags clicked") },
+            { BingoSettings.config.tagOption = TagOption.IGNORE_TAGS
+                println("Tag Option getRandomItemListWithoutTags clicked") },
+            {BingoSettings.config.tagOption = TagOption.EXCLUDE_LARGE_TAGS
+                println("Tag Option getRandomItemListExcludingLargeTags clicked") },
+            { BingoSettings.config.tagOption = TagOption.WEIGHTED_TAGS
+                println("Tag Option getRandomItemListWithWeightedTags clicked") }
         )
 
         tagOptionButtons = buttonLabels.mapIndexed { index, label ->
@@ -196,6 +218,7 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
 
         // Done Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Done")) {
+            BingoSettings.save()
             client?.setScreen(parent)
         }.dimensions(width / 2 - 50, height - 30, 100, 20).build())
     }
@@ -203,5 +226,9 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context)
         super.render(context, mouseX, mouseY, delta)
+    }
+    override fun close() {
+        super.close()
+        BingoSettings.save()
     }
 }
