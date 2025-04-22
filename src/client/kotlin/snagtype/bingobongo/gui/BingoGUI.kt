@@ -161,6 +161,7 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
         }.dimensions(rightX, rightY, columnWidth, widgetHeight).build())
 
         addDrawableChild(ButtonWidget.builder(Text.literal("Done")) {
+            BingoSettings.save()
             client?.setScreen(parent)
         }.dimensions(width / 2 - 75, height - 30, 150, 20).build())
     }
