@@ -17,6 +17,7 @@ import net.minecraft.recipe.Recipe
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.server.MinecraftServer
 import net.minecraft.util.math.BlockPos
+import snagtype.bingobongo.config.BingoSettings
 
 
 class CreateItemList {
@@ -38,7 +39,11 @@ class CreateItemList {
                 }
             }
             JsonUtil.jsonExportItemsNotFound(notFoundItemList)
-
+            //also save the modlist in our data class after making the json
+            val modList: List<String> = JsonUtil.getAllUniqueModNames()
+            BingoSettings.config.modList = modList
+            BingoSettings.config.modWhiteList = modList
+            BingoSettings.save()
         return itemList
         }
 

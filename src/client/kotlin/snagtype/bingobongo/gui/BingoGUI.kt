@@ -179,8 +179,8 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
 }
 
 class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod Blacklist")) {
-    private val allowedMods = mutableListOf<String>()
-    private val blacklistedMods = mutableListOf<String>()
+    private var allowedMods = mutableListOf<String>()
+    private var blacklistedMods = mutableListOf<String>()
     private lateinit var allowedScroll: ScrollableWidget
     private lateinit var blacklistedScroll: ScrollableWidget
     private val modsToBlacklist = mutableListOf<String>()
@@ -188,9 +188,13 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
     private var allowedScrollY: Double = 0.0
     private var blacklistScrollY: Double = 0.0
     init {
+        //test with all
+        //val allMods = FabricLoader.getInstance().allMods
+        //       allowedMods.addAll(allMods.map { it.metadata.name })
         // Load installed mods' names from the mod loader
-        val allMods = FabricLoader.getInstance().allMods
-        allowedMods.addAll(allMods.map { it.metadata.name })
+        allowedMods = BingoSettings.config.modWhiteList as? MutableList<String> ?: mutableListOf()
+        blacklistedMods = BingoSettings.config.modBlackList as? MutableList<String> ?: mutableListOf()
+
     }
 
     override fun init() {
@@ -207,6 +211,17 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
         titleWidget.x = (width - textRenderer.getWidth(titleWidget.message)) / 2
         titleWidget.y = 20
         addDrawableChild(titleWidget)
+
+        // Add column titles
+        val allowedTitle = TextWidget(Text.literal("Allowed Mods"), textRenderer)
+        allowedTitle.x = leftX
+        allowedTitle.y = leftY - 15
+        addDrawableChild(allowedTitle)
+
+        val blacklistedTitle = TextWidget(Text.literal("Blacklisted Mods"), textRenderer)
+        blacklistedTitle.x = rightX
+        blacklistedTitle.y = rightY - 15
+        addDrawableChild(blacklistedTitle)
 
         // Scroll widget for allowed mods
          allowedScroll = object : ScrollableWidget(leftX, leftY, columnWidth, scrollHeight, Text.literal("Allowed Mods")) {
@@ -296,6 +311,8 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
 
         // Done Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Done")) {
+            BingoSettings.config.modWhiteList = allowedMods
+            BingoSettings.config.modBlackList = blacklistedMods
             BingoSettings.save()
             client?.setScreen(parent)
         }.dimensions(width / 2 - 50, height - 30, 100, 20).build())
@@ -317,6 +334,8 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
         super.render(context, mouseX, mouseY, delta)
 
         if (modsToBlacklist.isNotEmpty() || modsToAllow.isNotEmpty()) {
+            allowedMods = allowedMods.toMutableList()
+            blacklistedMods = blacklistedMods.toMutableList()
             allowedMods.removeAll(modsToBlacklist)
             blacklistedMods.addAll(modsToBlacklist)
             modsToBlacklist.clear()
@@ -330,6 +349,8 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
 
     override fun close() {
         super.close()
+        BingoSettings.config.modWhiteList = allowedMods
+        BingoSettings.config.modBlackList = blacklistedMods
         BingoSettings.save()
     }
 }

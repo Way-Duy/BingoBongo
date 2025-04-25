@@ -168,7 +168,25 @@ class JsonUtil{
             File(jsonDirectory.toString()).writeText(gson.toJson(root))
         }
 
-        //todo: returns a list of items
+        fun getAllUniqueModNames(): List<String> {
+            val reader = jsonDirectory?.bufferedReader()
+            val json = JsonParser.parseReader(reader).asJsonObject
+            val items = json.getAsJsonObject("items")
+
+            val modNames = mutableSetOf<String>()
+
+            for ((_, valueArray) in items.entrySet()) {
+                valueArray.asJsonArray.forEach { entry ->
+                    val entryObject = entry.asJsonObject
+                    val modName = entryObject.get("modName")?.asString
+                    if (modName != null) {
+                        modNames.add(modName)
+                    }
+                }
+            }
+
+            return modNames.sorted()
+        }
         //Mod Name, item name, tag list
         fun jsonImportList():List<Item>? {
             var completeItemList: List<Item>? = null
