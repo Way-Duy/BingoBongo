@@ -4,11 +4,14 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
 import net.minecraft.client.gui.widget.*
-//import net.minecraft.client.gui.screen.ScreenTexts
-
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.ScrollableWidget
 import net.minecraft.client.gui.widget.CyclingButtonWidget
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import snagtype.bingobongo.BingoBongo
 import snagtype.bingobongo.utils.GenerateBingo
 import snagtype.bingobongo.config.BingoSettings
 import snagtype.bingobongo.config.TagOption
@@ -176,46 +179,120 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
 }
 
 class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod Blacklist")) {
-    private val allowedMods = mutableListOf("ModA", "ModB", "ModC", "ModD")
+    private val allowedMods = mutableListOf<String>()
     private val blacklistedMods = mutableListOf<String>()
+    private lateinit var allowedScroll: ScrollableWidget
+    private lateinit var blacklistedScroll: ScrollableWidget
+    private val modsToBlacklist = mutableListOf<String>()
+    private val modsToAllow = mutableListOf<String>()
+    private var allowedScrollY: Double = 0.0
+    private var blacklistScrollY: Double = 0.0
+    init {
+        // Load installed mods' names from the mod loader
+        val allMods = FabricLoader.getInstance().allMods
+        allowedMods.addAll(allMods.map { it.metadata.name })
+    }
 
     override fun init() {
         val columnWidth = width / 2 - 40
-        val spacing = 25
-        val widgetHeight = 20
-
+        val lineHeight = 15
         val leftX = 20
         val rightX = width / 2 + 20
-        var leftY = 60
-        var rightY = 60
+        val scrollHeight = height - 100
+        val leftY = 60
+        val rightY = 60
 
-        // Title
+
         val titleWidget = TextWidget(Text.literal("Configure Mod Blacklist"), textRenderer)
         titleWidget.x = (width - textRenderer.getWidth(titleWidget.message)) / 2
         titleWidget.y = 20
         addDrawableChild(titleWidget)
 
-        // Allowed Mods (Left List)
-        allowedMods.forEach { modName ->
-            val button = ButtonWidget.builder(Text.literal(modName)) {
-                allowedMods.remove(modName)
-                blacklistedMods.add(modName)
-                init() // Refresh screen
-            }.dimensions(leftX, leftY, columnWidth, widgetHeight).build()
-            addDrawableChild(button)
-            leftY += spacing
-        }
+        // Scroll widget for allowed mods
+         allowedScroll = object : ScrollableWidget(leftX, leftY, columnWidth, scrollHeight, Text.literal("Allowed Mods")) {
+            override fun getContentsHeight(): Int = allowedMods.size * lineHeight
+            override fun getDeltaYPerScroll(): Double = lineHeight.toDouble()
+             init {
+                 scrollY = allowedScrollY
+             }
 
-        // Blacklisted Mods (Right List)
-        blacklistedMods.forEach { modName ->
-            val button = ButtonWidget.builder(Text.literal(modName)) {
-                blacklistedMods.remove(modName)
-                allowedMods.add(modName)
-                init() // Refresh screen
-            }.dimensions(rightX, rightY, columnWidth, widgetHeight).build()
-            addDrawableChild(button)
-            rightY += spacing
+            override fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+                val startIndex = (scrollY / lineHeight).toInt()
+                val visibleLines = height/lineHeight
+                val endIndex = (startIndex + visibleLines).coerceAtMost(allowedMods.size-1)
+
+                for (i in startIndex  ..  endIndex) {
+                    //scrolling widget is treated as a large screen of getContentsHeight with a small visible portion
+                    val itemY = leftY + (i* lineHeight)+5
+                    context.drawText(textRenderer, allowedMods[i], x + 4, itemY, 0xFFFFFF, false)
+                }
+            }
+
+             override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+                 // Check if the mouse click is within the widget's visible bounds
+                 allowedScrollY= scrollY
+                 if (mouseX < x || mouseX > x + width || mouseY < y || mouseY > y + height)  return false
+                 val localMouseY = (mouseY - y + scrollY).toInt()
+                 val clickedIndex = localMouseY / lineHeight
+                 if (clickedIndex in allowedMods.indices) {
+                     val modName = allowedMods[clickedIndex]
+
+                     modsToBlacklist.add(modName)
+                 }
+
+                 return false
+             }
+             override fun setScrollY(value: Double) {
+                 val maxScroll = (contentsHeight - this.height).coerceAtLeast(0)
+                 super.setScrollY(value.coerceIn(0.0, maxScroll.toDouble()))
+             }
+            override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            }
         }
+        addDrawableChild(allowedScroll)
+
+
+        // Scroll widget for blacklisted mods
+         blacklistedScroll = object : ScrollableWidget(rightX, rightY, columnWidth, scrollHeight, Text.literal("Blacklisted Mods")) {
+             init {
+                 scrollY = blacklistScrollY
+             }
+             override fun getContentsHeight(): Int = blacklistedMods.size * lineHeight
+            override fun getDeltaYPerScroll(): Double = lineHeight.toDouble()
+
+            override fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+                if(blacklistedMods.isNotEmpty()) {
+                    val startIndex = (scrollY / lineHeight).toInt()
+                    val visibleLines = contentsHeight / lineHeight
+                    val endIndex = (startIndex + visibleLines).coerceAtMost(blacklistedMods.size-1)
+                    for (i in startIndex..endIndex) {
+                        //scrolling widget is treated as a large screen of getContentsHeight with a small visible portion
+                        val itemY = leftY + (i * lineHeight)+5
+                        context.drawText(textRenderer, blacklistedMods[i], x + 4, itemY, 0xFFFFFF, false)
+                    }
+                }
+            }
+
+             override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+                 // Check if the mouse click is within the widget's visible bounds
+                 blacklistScrollY= scrollY
+                 if (mouseX < x || mouseX > x + width || mouseY < y || mouseY > y + height) return false
+
+                 val localMouseY = (mouseY - y + scrollY).toInt()
+                 val clickedIndex = localMouseY / lineHeight
+                 if (clickedIndex in blacklistedMods.indices) {
+                     val modName = blacklistedMods[clickedIndex]
+                     modsToAllow.add(modName)
+
+                     return true
+                 }
+
+                 return false
+             }
+            override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            }
+        }
+        addDrawableChild(blacklistedScroll)
 
         // Done Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Done")) {
@@ -223,11 +300,34 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
             client?.setScreen(parent)
         }.dimensions(width / 2 - 50, height - 30, 100, 20).build())
     }
+    // Custom function to update both mod lists dynamically without reloading the entire screen
+    private fun updateLists() {
+        allowedScroll?.let { remove(it) }
+        blacklistedScroll?.let { remove(it) }
+
+        // Remove all buttons
+        children().clear()
+
+        // Reinitialize the screen (title and lists)
+        init()
+    }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context)
         super.render(context, mouseX, mouseY, delta)
+
+        if (modsToBlacklist.isNotEmpty() || modsToAllow.isNotEmpty()) {
+            allowedMods.removeAll(modsToBlacklist)
+            blacklistedMods.addAll(modsToBlacklist)
+            modsToBlacklist.clear()
+
+            blacklistedMods.removeAll(modsToAllow)
+            allowedMods.addAll(modsToAllow)
+            modsToAllow.clear()
+            updateLists()
+        }
     }
+
     override fun close() {
         super.close()
         BingoSettings.save()
