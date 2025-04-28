@@ -36,25 +36,32 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
 
         // --- LEFT COLUMN ---
 
-        val freeSpaceCheckbox = object : CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Free Space"), BingoSettings.config.enableFreeSpace) {
+        // Free Space Checkbox
+        val freeSpaceCheckbox = object : CheckboxWidget(
+            leftX, leftY, columnWidth, widgetHeight,
+            Text.literal("Enable Free Space"),
+            BingoSettings.config.enableFreeSpace // Correct setting
+        ) {
             override fun onPress() {
-                super.onPress() // Call the original onPress functionality
-                // Toggle the value whenever the checkbox is clicked
-                BingoSettings.config.enableFreeSpace = !BingoSettings.config.enableFreeSpace
-                BingoSettings.save() // Optionally save after the change
+                super.onPress()
+                BingoSettings.config.enableFreeSpace = this.isChecked
+                BingoSettings.save()
             }
         }
         addDrawableChild(freeSpaceCheckbox)
 
-        leftY += spacing // Adjust the position for the next widget
+        leftY += spacing // Move down for the next widget
 
-        //Random Rewards  Checkbox
-        val randomRewardsCheckbox = object : CheckboxWidget(leftX, leftY, columnWidth, widgetHeight, Text.literal("Enable Random Rewards"), BingoSettings.config.enableFreeSpace) {
+        // Random Rewards Checkbox
+        val randomRewardsCheckbox = object : CheckboxWidget(
+            leftX, leftY, columnWidth, widgetHeight,
+            Text.literal("Enable Random Rewards"),
+            BingoSettings.config.enableRandomRewards // FIXED: correct setting
+        ) {
             override fun onPress() {
-                super.onPress() // Call the original onPress functionality
-                // Toggle the value whenever the checkbox is clicked
-                BingoSettings.config.enableRandomRewards = !BingoSettings.config.enableRandomRewards
-                BingoSettings.save() // Optionally save after the change
+                super.onPress()
+                BingoSettings.config.enableRandomRewards = this.isChecked
+                BingoSettings.save()
             }
         }
         addDrawableChild(randomRewardsCheckbox)
@@ -75,6 +82,7 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
 
         // Options button (opens new screen)
         addDrawableChild(ButtonWidget.builder(Text.literal("Options")) {
+            BingoSettings.save()
             MinecraftClient.getInstance().setScreen(OptionsPopup(this))
         }.dimensions(width - 110, height - 30, 100, 20).build())
 
@@ -105,6 +113,8 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
 class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options")) {
 
     lateinit var tagOptionButtons: List<ButtonWidget>
+    private lateinit var maxTagSizeField: TextFieldWidget
+
     override fun init() {
         val columnWidth = width / 2 - 40
         val columnSpacing = 20
@@ -123,7 +133,7 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
         addDrawableChild(tagOptionsLabel)
         leftY += spacing  // Move below the label for buttons
 
-        //Tag Options
+        // Tag Options
         val buttonLabels = listOf(
             "Use Regular Tags",
             "Ignore Tags",
@@ -132,38 +142,77 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
         )
 
         val buttonActions = listOf(
-            { BingoSettings.config.tagOption = TagOption.TAGS
-                println("Tag Option getRandomItemListWithTags clicked") },
-            { BingoSettings.config.tagOption = TagOption.IGNORE_TAGS
-                println("Tag Option getRandomItemListWithoutTags clicked") },
-            {BingoSettings.config.tagOption = TagOption.EXCLUDE_LARGE_TAGS
-                println("Tag Option getRandomItemListExcludingLargeTags clicked") },
-            { BingoSettings.config.tagOption = TagOption.WEIGHTED_TAGS
-                println("Tag Option getRandomItemListWithWeightedTags clicked") }
+            {
+                BingoSettings.config.tagOption = TagOption.TAGS
+                println("Tag Option getRandomItemListWithTags clicked")
+            },
+            {
+                BingoSettings.config.tagOption = TagOption.IGNORE_TAGS
+                println("Tag Option getRandomItemListWithoutTags clicked")
+            },
+            {
+                BingoSettings.config.tagOption = TagOption.EXCLUDE_LARGE_TAGS
+                println("Tag Option getRandomItemListExcludingLargeTags clicked")
+            },
+            {
+                BingoSettings.config.tagOption = TagOption.WEIGHTED_TAGS
+                println("Tag Option getRandomItemListWithWeightedTags clicked")
+            }
         )
 
         tagOptionButtons = buttonLabels.mapIndexed { index, label ->
             val button = ButtonWidget.builder(Text.literal(label)) {
-                // On click, set all buttons active, then disable this one
+                // When clicked: re-enable all buttons, disable only this one
                 tagOptionButtons.forEach { it.active = true }
                 it.active = false
                 buttonActions[index]() // Run corresponding action
             }.dimensions(leftX, leftY + spacing * index, columnWidth, widgetHeight).build()
 
             addDrawableChild(button)
+
+            // After adding "Exclude Large Tags" button (index == 2), add number input
+            if (index == 2) {
+                maxTagSizeField = TextFieldWidget(
+                    textRenderer,
+                    leftX + columnWidth + 5,
+                    leftY + spacing * index,
+                    50,
+                    widgetHeight,
+                    Text.literal("Max Tag Size")
+                ).apply {
+                    text = "30"
+                    setChangedListener { newText ->
+                        if (!newText.matches(Regex("\\d*"))) {
+                            text = newText.filter { it.isDigit() }
+                        }
+                    }
+                }
+                addDrawableChild(maxTagSizeField)
+            }
             button
         }
 
-// Disable the first button by default
-        tagOptionButtons[0].active = false
+        // --- This is the FIXED PART ---
+// Disable the button based on BingoSettings.config.tagOption, not hardcoded
+        val selectedIndex = when (BingoSettings.config.tagOption) {
+            TagOption.TAGS -> 0
+            TagOption.IGNORE_TAGS -> 1
+            TagOption.EXCLUDE_LARGE_TAGS -> 2
+            TagOption.WEIGHTED_TAGS -> 3
+        }
+        tagOptionButtons.forEach { it.active = true } // Reset all active
+        tagOptionButtons[selectedIndex].active = false // Disable the selected one
 
-
-// Configure Mod Blacklist Button
+        // Configure Mod Blacklist Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Configure Mod Blacklist")) {
+            BingoSettings.config.excludeTagLimit = maxTagSizeField.text.toInt()
+            BingoSettings.save()
             MinecraftClient.getInstance().setScreen(ModBlacklistPopup(this))
         }.dimensions(rightX, rightY, columnWidth, widgetHeight).build())
 
+        // Done Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Done")) {
+            BingoSettings.config.excludeTagLimit = maxTagSizeField.text.toInt()
             BingoSettings.save()
             client?.setScreen(parent)
         }.dimensions(width / 2 - 75, height - 30, 150, 20).build())

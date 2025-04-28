@@ -37,7 +37,7 @@ class GenerateBingo
             bingoList = when (BingoSettings.config.tagOption) {
             TagOption.TAGS -> JsonUtil.getRandomItemListWithTags(bingoSize)
             TagOption.IGNORE_TAGS -> JsonUtil.getRandomItemListWithoutTags(bingoSize)
-            TagOption.EXCLUDE_LARGE_TAGS -> JsonUtil.getRandomItemListExcludingLargeTags(bingoSize, 10)
+            TagOption.EXCLUDE_LARGE_TAGS -> JsonUtil.getRandomItemListExcludingLargeTags(bingoSize, BingoSettings.config.excludeTagLimit)
             TagOption.WEIGHTED_TAGS -> JsonUtil.getRandomItemListWithWeightedTags(bingoSize)
         }
         BingoBongo.logger.info(bingoList.toString())

@@ -43,6 +43,7 @@ class CreateItemList {
             val modList: List<String> = JsonUtil.getAllUniqueModNames()
             BingoSettings.config.modList = modList
             BingoSettings.config.modWhiteList = modList
+            BingoSettings.config.modBlackList = null
             BingoSettings.save()
         return itemList
         }
@@ -91,7 +92,7 @@ class CreateItemList {
                         val itemStrings = Parser.itemToStringList(stack.item)
                         if (!itemList.contains(itemStrings)){
                             itemList.add(itemStrings)
-                            BingoBongo.logger.info("Item "+ stack.item + " is dropped from block: ${block.name.string}")
+                            //BingoBongo.logger.info("Item "+ stack.item + " is dropped from block: ${block.name.string}")
                         }
                       }
                 }
@@ -121,7 +122,7 @@ class CreateItemList {
                         if (!result.isEmpty) {
                             val itemStrings = Parser.itemToStringList(result.item)
                             if (!itemList.contains(itemStrings)) {
-                                BingoBongo.logger.info("Item is craftable: ${result.item}")
+                               // BingoBongo.logger.info("Item is craftable: ${result.item}")
                                 itemList.add(itemStrings)
                             }
                         }
@@ -154,7 +155,7 @@ class CreateItemList {
                                     val entryItem = it.get(entry) as? Item
                                     val itemStrings = Parser.itemToStringList(entryItem!!)
                                     if (!itemList.contains(itemStrings)){
-                                        BingoBongo.logger.info("Found ${entryItem} in loot table $id")
+                                        //BingoBongo.logger.info("Found ${entryItem} in loot table $id")
                                         itemList.add(itemStrings)
                                     }else {
                                         //BingoBongo.logger.debug("Skipping unknown loot entry type: ${entry.javaClass.name}")
@@ -219,7 +220,7 @@ class CreateItemList {
                         }
                          */
                         if (!result.isEmpty && result.item == item) {
-                            BingoBongo.logger.info("Item is craftable: $item")
+                            //BingoBongo.logger.info("Item is craftable: $item")
                             true
                         }else {
                             false
@@ -252,7 +253,7 @@ class CreateItemList {
                                     it.isAccessible = true
                                     val entryItem = it.get(entry) as? Item
                                     if (entryItem == item) {
-                                        BingoBongo.logger.info("Found $item in loot table $id")
+                                        //BingoBongo.logger.info("Found $item in loot table $id")
                                         return true
                                     }else {
                                         //BingoBongo.logger.debug("Skipping unknown loot entry type: ${entry.javaClass.name}")
@@ -309,7 +310,7 @@ class CreateItemList {
 
                 for (stack in allDrops) {
                     if (!stack.isEmpty && stack.item == item) {
-                        BingoBongo.logger.info("Item $item is dropped from block: ${block.name.string}")
+                        //BingoBongo.logger.info("Item $item is dropped from block: ${block.name.string}")
                         return true
                     }
                 }

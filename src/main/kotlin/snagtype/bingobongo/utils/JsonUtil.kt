@@ -9,6 +9,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import snagtype.bingobongo.config.BingoSettings
 import java.nio.file.Paths
 import java.util.Random
 class JsonUtil{
@@ -206,7 +207,9 @@ class JsonUtil{
             for ((itemID, array) in itemsObject.entrySet()) {
                 val itemInfo = array.asJsonArray[0].asJsonObject
                 val boolHasTag = itemInfo.get("boolHasTag")?.asString
-                if (boolHasTag != "true") {
+                val modName = itemInfo.get("modName")?.asString ?: continue
+
+                if (boolHasTag != "true" && modName !in (BingoSettings.config.modBlackList ?: emptySet())) {
                     itemPool.add(itemID)
                 }
             }
@@ -238,8 +241,15 @@ class JsonUtil{
                     randomKey // it's an individual item
                 }
 
-                val item = Registries.ITEM.get(Identifier.tryParse(itemID) ?: continue)
-                //BingoBongo.logger.info(item.toString())
+                val itemIdentifier = Identifier.tryParse(itemID) ?: continue
+                val item = Registries.ITEM.get(itemIdentifier)
+
+                // Double-check here too (especially for tag-picked items)
+                val modName = itemIdentifier.namespace
+                if (modName in (BingoSettings.config.modBlackList ?: emptySet())) {
+                    continue
+                }
+
                 selectedItems.add(item)
             }
 
@@ -258,7 +268,13 @@ class JsonUtil{
 
             // Parse items
             val itemsObject = jsonRoot.getAsJsonObject("items")
-            for ((itemID, array) in itemsObject.entrySet()) { itemPool.add(itemID) }
+            for ((itemID, array) in itemsObject.entrySet()) {val firstEntry = array.asJsonArray[0].asJsonObject
+                val modName = firstEntry.get("modName")?.asString ?: continue
+
+                if (modName !in (BingoSettings.config.modBlackList ?: emptySet())) {
+                    itemPool.add(itemID)
+                }
+            }
 
             val selectedItems = mutableSetOf<Item>()
 
@@ -273,8 +289,8 @@ class JsonUtil{
         }
         //excludes tags with too many items; tag.itemCount > limit
         //randomly selects a list of 25 items and tags with itemCount > limit
-        fun getRandomItemListExcludingLargeTags( bingoSize: Int, tagLimit: Int): List<Item>? {
-            BingoBongo.logger.info("Randomly selecting 25 items ignoring tags with item.Count > taglimit: ")
+        fun getRandomItemListExcludingLargeTags(bingoSize: Int, tagLimit: Int): List<Item>? {
+            BingoBongo.logger.info("Randomly selecting 25 items ignoring tags with item.Count > tagLimit: ")
             val result = mutableListOf<Item>()
 
             val json = Gson().fromJson(file.readText(), JsonObject::class.java)
@@ -283,12 +299,19 @@ class JsonUtil{
 
             val eligibleItems = mutableListOf<Item>()
             val eligibleTagItemPools = mutableListOf<List<Item>>() // Each list = tag with small enough item count
+
             // Prepare eligible items
             for ((_, itemEntry) in itemsJson.entrySet()) {
                 val itemArray = itemEntry.asJsonArray
                 val itemObj = itemArray.firstOrNull()?.asJsonObject ?: continue
                 val itemId = itemObj["itemID"].asString
                 val hasTag = itemObj["boolHasTag"]?.asString?.lowercase() == "true"
+                val modName = itemObj["modName"]?.asString ?: continue
+
+                // Skip blacklisted mods
+                if (modName in (BingoSettings.config.modBlackList ?: emptySet())) {
+                    continue
+                }
 
                 val tags = itemObj.entrySet()
                     .filter { it.key.startsWith("tag") }
@@ -314,23 +337,27 @@ class JsonUtil{
                 val tagItems = mutableListOf<Item>()
                 val tagEntries = tagArray.asJsonArray
                 if (tagEntries.size() > tagLimit) {
-                    //BingoBongo.logger.info(("excluded tags: $tagName"))
                     continue
                 }
-
-                //BingoBongo.logger.info(("included tags: $tagName"))
 
                 for (itemObj in tagEntries) {
                     val innerItemId = (itemObj.asJsonObject.entrySet().first().key)
                     val item = runCatching { Registries.ITEM.get(Identifier(innerItemId)) }.getOrNull()
+
                     if (item != null && !item.defaultStack.isEmpty) {
+                        val modName = Identifier.tryParse(innerItemId)?.namespace ?: continue
+
+                        // Skip blacklisted mods for tag items too
+                        if (modName in (BingoSettings.config.modBlackList ?: emptySet())) {
+                            continue
+                        }
+
                         tagItems.add(item)
                     }
                 }
                 if (tagItems.isNotEmpty()) {
                     eligibleTagItemPools.add(tagItems)
                 }
-
             }
 
             // Combine both sources
@@ -347,7 +374,7 @@ class JsonUtil{
         //weights tags inversely to the number of items each tag has.
         //randomly selects a list of 25 items and weighted tags
         // i have no idea if this actually does what we hope it does
-        fun getRandomItemListWithWeightedTags( bingoSize: Int): List<Item>? {
+        fun getRandomItemListWithWeightedTags(bingoSize: Int): List<Item>? {
             val selectedItems = mutableListOf<Item>()
             val json = Gson().fromJson(file.readText(), JsonObject::class.java)
 
@@ -363,8 +390,10 @@ class JsonUtil{
                 val itemData = array.firstOrNull()?.asJsonObject ?: continue
 
                 val boolHasTag = itemData["boolHasTag"].asString.toBooleanStrictOrNull() ?: false
-                if (!boolHasTag) {
-                    val itemID = itemData["itemID"].asString
+                val itemID = itemData["itemID"].asString
+                val modName = itemData["modName"]?.asString ?: continue
+
+                if (!boolHasTag && modName !in (BingoSettings.config.modBlackList ?: emptySet())) {
                     Registries.ITEM.getOrEmpty(Identifier.tryParse(itemID)).ifPresent { itemPool.add(it) }
                 }
             }
@@ -372,9 +401,8 @@ class JsonUtil{
             // Parse tags and assign inverse weights
             for ((tagName, tagArray) in tagsJson.entrySet()) {
                 val tagItemArray = tagArray.asJsonArray
-                val size = tagItemArray.size()
-                if (size == 0) continue
-                val weight = 1.0 / size.toDouble()
+                if (tagItemArray.size() == 0) continue
+                val weight = 1.0 / tagItemArray.size().toDouble()
                 tagPool.add(tagName to weight)
             }
 
@@ -396,15 +424,31 @@ class JsonUtil{
 
                 if (pick in itemsJson.keySet()) {
                     // It's an item
+                    val itemObj = itemsJson[pick]?.asJsonArray?.firstOrNull()?.asJsonObject ?: continue
+                    val modName = itemObj["modName"]?.asString ?: continue
+
+                    if (modName in (BingoSettings.config.modBlackList ?: emptySet())) {
+                        continue // skip blacklisted mod items
+                    }
+
                     Registries.ITEM.getOrEmpty(Identifier.tryParse(pick)).ifPresent { selectedItems.add(it) }
                 } else if (pick in tagsJson.keySet()) {
                     // It's a tag: choose one random item from it
-                    val tagArray = tagsJson[pick].asJsonArray
+                    val tagArray = tagsJson[pick]?.asJsonArray ?: continue
                     if (tagArray.isEmpty) continue
+
                     val randomkt = kotlin.random.Random.Default
                     val tagList = tagArray.map { it.asJsonObject } // convert JsonArray to List<JsonObject>
-                    val randomItem = tagList.random(randomkt)        // use Kotlin's random with your RNG
-                    val randomItemKey = randomItem.keySet().first()
+
+                    // Pick random item from tag, but ensure it's not blacklisted
+                    val randomItemObj = tagList.randomOrNull() ?: continue
+                    val randomItemKey = randomItemObj.keySet().first()
+
+                    val modName = Identifier.tryParse(randomItemKey)?.namespace ?: continue
+                    if (modName in (BingoSettings.config.modBlackList ?: emptySet())) {
+                        continue // skip blacklisted mods
+                    }
+
                     Registries.ITEM.getOrEmpty(Identifier.tryParse(randomItemKey)).ifPresent { selectedItems.add(it) }
                 }
             }
