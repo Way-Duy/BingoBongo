@@ -22,7 +22,6 @@ import snagtype.bingobongo.config.BingoSettings
 
 class CreateItemList {
     companion object {
-        //theoretically should save time on world load
         fun getListBottomUp(server: MinecraftServer): MutableList<MutableList<String>> {
             val itemList = mutableListOf<MutableList<String>>()
             // every itemList element is a list of itemStrings for a particular itemID
@@ -40,11 +39,38 @@ class CreateItemList {
             }
             JsonUtil.jsonExportItemsNotFound(notFoundItemList)
             //also save the modlist in our data class after making the json
-            val modList: List<String> = JsonUtil.getAllUniqueModNames()
-            BingoSettings.config.modList = modList
-            BingoSettings.config.modWhiteList = modList
-            BingoSettings.config.modBlackList = null
-            BingoSettings.save()
+            val modList: MutableList<String>?  = JsonUtil.getAllUniqueModNames()
+            //set up the data class
+            if (BingoSettings.config.modList == null) {
+                BingoSettings.config.modList = modList
+                BingoSettings.config.modWhiteList = modList
+                BingoSettings.config.modBlackList = null
+                BingoSettings.config.excludeTagLimit = 30
+            }
+            else {
+                for(mod in BingoSettings.config.modList!!) // removes mods that were taken out
+                {
+                    if (modList != null) {
+                        if(!modList.contains(mod))
+                        {
+                            BingoSettings.config.modWhiteList?.remove(mod)
+                            BingoSettings.config.modBlackList?.remove(mod)
+                        }
+
+                    }
+                }
+                BingoSettings.config.modList = modList
+                if (modList != null) {
+                    for (mod in modList) { // adds new mods that were added
+                        if(BingoSettings.config.modWhiteList?.contains(mod) == false && BingoSettings.config.modBlackList?.contains(mod) == false) {
+                            BingoSettings.config.modWhiteList!!.add(mod)
+                        }
+                    }
+
+                }
+
+            }
+                BingoSettings.save()
         return itemList
         }
 

@@ -69,8 +69,11 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
 
         //Generate Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Generate")) {
-            println("Generate clicked")
-            GenerateBingo();
+            if(BingoSettings.config.modWhiteList == null)
+                    BingoBongo.logger.info("No available mods to choose from")
+            else {
+                GenerateBingo()
+            };
         }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
         leftY += spacing
 
@@ -180,7 +183,7 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
                     widgetHeight,
                     Text.literal("Max Tag Size")
                 ).apply {
-                    text = "30"
+                    text = BingoSettings.config.excludeTagLimit.toString()
                     setChangedListener { newText ->
                         if (!newText.matches(Regex("\\d*"))) {
                             text = newText.filter { it.isDigit() }

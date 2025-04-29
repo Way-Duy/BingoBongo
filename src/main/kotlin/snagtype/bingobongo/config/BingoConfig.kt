@@ -17,7 +17,7 @@ data class BingoConfig(
     var enableRandomRewards: Boolean = false,
     var enableFreeSpace: Boolean = false,
     var excludeTagLimit: Int = 30,
-    var modList: List<String>? = null,
-    var modWhiteList: List<String>? = null,
-    var modBlackList: List<String>? = null
+    var modList: MutableList<String>? = null,
+    var modWhiteList: MutableList<String>? = null,
+    var modBlackList: MutableList<String>? = null
 )
