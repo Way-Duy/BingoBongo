@@ -40,7 +40,7 @@ class GenerateBingo
             TagOption.EXCLUDE_LARGE_TAGS -> JsonUtil.getRandomItemListExcludingLargeTags(bingoSize, BingoSettings.config.excludeTagLimit)
             TagOption.WEIGHTED_TAGS -> JsonUtil.getRandomItemListWithWeightedTags(bingoSize)
         }
-        BingoBongo.logger.info(bingoList.toString())
+        BingoBongo.logger.info("BingoList: $bingoList")
         //val advancementPage: BingoAdvancementPage = BingoAdvancementPage(this.advancementDirectory, bingoList)
 
 

@@ -228,7 +228,7 @@ class JsonUtil{
             // Combine itemIDs and tagNames into one pool
             val combinedPool = itemPool + tagMap.keys
             val selectedItems = mutableSetOf<Item>()
-            if (combinedPool.size < 25)
+            if (itemPool.size < 25)
             {
                 BingoBongo.logger.info("Not enough selectable items")
                 return null
@@ -385,7 +385,6 @@ class JsonUtil{
         }
         //weights tags inversely to the number of items each tag has.
         //randomly selects a list of 25 items and weighted tags
-        // i have no idea if this actually does what we hope it does
         fun getRandomItemListWithWeightedTags(bingoSize: Int): List<Item>? {
             val selectedItems = mutableListOf<Item>()
             val json = Gson().fromJson(file.readText(), JsonObject::class.java)
@@ -430,7 +429,7 @@ class JsonUtil{
             val totalWeight = weightedOptions.sumOf { it.second }
             val normalized = weightedOptions.map { it.first to (it.second / totalWeight) }
 
-            if (selectedItems.size+ tagsJson.keySet().size < 25) //check size of itempool
+            if (itemPool.size < 25) //check size of itempool
             {
                 BingoBongo.logger.info("Not enough selectable items")
                 return null
