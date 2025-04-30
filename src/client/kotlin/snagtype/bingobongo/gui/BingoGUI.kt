@@ -72,7 +72,7 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
             if(BingoSettings.config.modWhiteList == null)
                     BingoBongo.logger.info("No available mods to choose from")
             else {
-                GenerateBingo()
+                GenerateBingo(BingoBongo.globalServer)
             };
         }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
         leftY += spacing
@@ -188,6 +188,10 @@ class OptionsPopup(private val parent: Screen) : Screen(Text.literal("Options"))
                         if (!newText.matches(Regex("\\d*"))) {
                             text = newText.filter { it.isDigit() }
                         }
+                        else if(newText == "") //if user changes the input to nothing
+                        {
+                            text = "0"
+                        }
                     }
                 }
                 addDrawableChild(maxTagSizeField)
@@ -242,7 +246,7 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
     init {
         //test with all
         //val allMods = FabricLoader.getInstance().allMods
-        //       allowedMods.addAll(allMods.map { it.metadata.name })
+               //allowedMods.addAll(allMods.map { it.metadata.name })
         // Load installed mods' names from the mod loader
         allowedMods = BingoSettings.config.modWhiteList as? MutableList<String> ?: mutableListOf()
         blacklistedMods = BingoSettings.config.modBlackList as? MutableList<String> ?: mutableListOf()

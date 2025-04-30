@@ -81,5 +81,10 @@ class Parser {
             //BingoBongo.logger.info("Tag name only: $tagString")
             return tagString
         }
+        fun stringNameToItem (itemString: String): Item
+        {
+            val id = Identifier.tryParse(itemString)
+            return Registries.ITEM.getOrEmpty(id).orElse(null)
+        }
     }
 }

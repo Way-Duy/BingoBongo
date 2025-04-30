@@ -13,6 +13,9 @@ import net.minecraft.text.Text
 import org.slf4j.LoggerFactory
 import snagtype.bingobongo.utils.GenerateBingo
 import snagtype.bingobongo.config.BingoSettings
+import snagtype.bingobongo.mixin.AccessorAdvancementManager
+import snagtype.bingobongo.mixin.AccessorServerAdvancementLoader
+//import snagtype.bingobongo.mixin.AccessorAdvancementManager
 import snagtype.bingobongo.utils.CreateItemList
 import snagtype.bingobongo.utils.JsonUtil
 
@@ -21,27 +24,13 @@ object BingoBongo : ModInitializer {
 
 	 var isFreeSpaceEnabled: Boolean = false
      val logger = LoggerFactory.getLogger("BingoBongo")
+	 lateinit var globalServer: MinecraftServer
 
 
 	override fun onInitialize() {
+		GenerateBingo.createRootAdvancement("BingoBongo")
 		BingoSettings.load()
-		 CommandRegistrationCallback.EVENT.register(CommandRegistrationCallback { dispatcher: CommandDispatcher<ServerCommandSource?>, registryAccess: CommandRegistryAccess?, environment: RegistrationEnvironment? ->
-			dispatcher.register(
-				CommandManager.literal("CreateBingoCommand").executes { context: CommandContext<ServerCommandSource> ->
 
-					context.source.sendFeedback(
-
-						{ Text.literal("Called /CreateBingoCommand with no arguments.") },
-						false
-					)
-					logger.info("Before Command Init")
-					GenerateBingo();
-					logger.info("After Command Init")
-					1
-				})
-		})
-
-		//this will be moved to a command
 		fun toggleFreeSpace() {isFreeSpaceEnabled= !isFreeSpaceEnabled}
 
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -77,10 +66,11 @@ object BingoBongo : ModInitializer {
 	fun registerWorldLoadListener() {// after world loaded
 		ServerLifecycleEvents.SERVER_STARTED.register { server: MinecraftServer ->
 			println("World has finished loading!")
-				val itemList = CreateItemList.getListBottomUp(server) //what we will send to the Json Util; List of List<String>
-				//change for testing all items.
-				//val itemList = CreateItemList.getListForTesting(server)
-				JsonUtil.jsonExportList(itemList)
+			globalServer = server
+			val itemList = CreateItemList.getListBottomUp(server) //what we will send to the Json Util; List of List<String>
+			//change for testing all items.
+			//val itemList = CreateItemList.getListForTesting(server)
+			JsonUtil.jsonExportList(itemList)
 		}
 	}
 

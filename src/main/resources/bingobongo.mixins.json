@@ -3,7 +3,8 @@
 	"package": "snagtype.bingobongo.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ExampleMixin"
+		"AccessorAdvancementManager",
+		"AccessorServerAdvancementLoader"
 	],
 	"injectors": {
 		"defaultRequire": 1

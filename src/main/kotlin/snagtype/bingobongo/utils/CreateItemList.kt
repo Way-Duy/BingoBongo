@@ -40,6 +40,8 @@ class CreateItemList {
             JsonUtil.jsonExportItemsNotFound(notFoundItemList)
             //also save the modlist in our data class after making the json
             val modList: MutableList<String>?  = JsonUtil.getAllUniqueModNames()
+            val modsToRemove = mutableListOf<String>()
+
             //set up the data class
             if (BingoSettings.config.modList == null) {
                 BingoSettings.config.modList = modList
@@ -48,16 +50,19 @@ class CreateItemList {
                 BingoSettings.config.excludeTagLimit = 30
             }
             else {
-                for(mod in BingoSettings.config.modList!!) // removes mods that were taken out
+                for(mod in BingoSettings.config.modWhiteList!!) // removes mods that were taken out
                 {
                     if (modList != null) {
                         if(!modList.contains(mod))
                         {
-                            BingoSettings.config.modWhiteList?.remove(mod)
-                            BingoSettings.config.modBlackList?.remove(mod)
+                            modsToRemove.add(mod)
                         }
 
                     }
+                }
+                for (mod in modsToRemove) {
+                    BingoSettings.config.modWhiteList?.remove(mod)
+                    BingoSettings.config.modBlackList?.remove(mod)
                 }
                 BingoSettings.config.modList = modList
                 if (modList != null) {
