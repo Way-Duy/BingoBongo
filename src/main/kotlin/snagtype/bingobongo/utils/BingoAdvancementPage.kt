@@ -19,7 +19,6 @@ import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import snagtype.bingobongo.BingoBongo.syncAdvancements
-
 class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
 
     init {
@@ -64,7 +63,6 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
             val col = index / 5
             val name = "row${row}_col${col}"
             val id = Identifier("bingobongo", "bingo/$name")
-            BingoBongo.logger.info("row${row}_col${col}")
             val parentId = if (col ==0) rootAdvancement else idGrid[(col - 1) * 5 + row]
 
             val builder = Advancement.Builder.create()
@@ -86,18 +84,38 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
                 // AIR cannot be detected via InventoryChangedCriterion, so use tick
                builder.criterion("free_space", TickCriterion.Conditions.createTick())
             }
-            // Double-check for empty criteria (should never happen)
-            if (builder.criteria.isEmpty()) {
-                println("ERROR: Advancement at $id has no criteria! Item: $item")
-                throw IllegalStateException("Advancement at $id has no criteria!")
-            }
-
             val advancement = builder.build(id)
             idGrid.add(advancement)
 
             // Now save the advancement as JSON
             saveAdvancementAsJson(id, advancement,name,item)
+            //create dummy advancement after the last column
+            if (col == 4) {
+                val name = "dummy_row${row}_col${col+1}"
+                val id = Identifier("bingobongo", "bingo/$name")
+                val parentId = idGrid[(col) * 5 + row]
+
+                val builder = Advancement.Builder.create()
+                    .parent(parentId)
+                    .display(
+                        Items.AIR,
+                        Text.literal("Dummy Advancement"),
+                        Text.literal("testing"),
+                        Identifier("minecraft:textures/gui/advancements/backgrounds/air.png"),
+                        AdvancementFrame.TASK,
+                        false,
+                        false,
+                        false
+                    )
+                builder.criterion("Dummy Advancement", TickCriterion.Conditions.createTick())
+                val advancement = builder.build(id)
+
+                // Now save the advancement as JSON
+                saveAdvancementAsJson(id, advancement,name,Items.AIR)
+            }
+
         }
+
 
         println("Bingo advancements registered dynamically.")
 
@@ -107,8 +125,10 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
             syncAdvancements(server, player)
         }
 
-        // Reload advancements
-        reloadAdvancements(server)
+        // Reload advancements twice
+        //for some reason necessary to read our newly generated datapack this way
+        forceReload(server)
+        forceReload(server)
     }
     private fun saveRootAdvancementJson(
         id: Identifier,
@@ -156,8 +176,8 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
             }
 
             displayObj.addProperty("frame", display.frame.name.lowercase())
-            displayObj.addProperty("show_toast", display.shouldShowToast())
-            displayObj.addProperty("announce_to_chat", display.shouldAnnounceToChat())
+            displayObj.addProperty("show_toast", false)
+            displayObj.addProperty("announce_to_chat", false)
             displayObj.addProperty("hidden", true)
 
             jsonObject.add("display", displayObj)
@@ -214,7 +234,8 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
         if (display != null) {
             val displayObj = JsonObject()
 
-            val iconId = display.icon.toString().replace("1 ", "") // Remove any "1 " prefix if present
+            val iconId1 = display.icon.toString().replace("1 ", "") // Remove any "1 " prefix if present
+            val iconId = iconId1.replace("0 ", "") // Remove any "0 " prefix if present (air)
             val iconObj = JsonObject()
             iconObj.addProperty("item", iconId)
 
@@ -260,15 +281,12 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
         return gson.toJson(jsonObject)
     }
 
+    fun forceReload(server: MinecraftServer) {
+        val commandManager = server.commandManager
+        val commandSource = server.commandSource
 
-    // Method to reload advancements after saving them as JSON
-    private fun reloadAdvancements(server: MinecraftServer) {
-        val loader = server.advancementLoader
-        val manager = (loader as AccessorServerAdvancementLoader).manager
-
-        // Manually reload advancements
-        // (manager as AccessorAdvancementManager).reload()  // This forces a reload of advancements
-
-        //println("Advancements reloaded.")
+        // Run the /reload command
+        commandManager.executeWithPrefix(commandSource, "reload")
     }
+
 }
