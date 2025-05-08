@@ -67,8 +67,7 @@ object BingoBongo : ModInitializer {
 			val worldDirectory = server.getSavePath(WorldSavePath.ROOT).toFile()
 			println("World root directory: ${worldDirectory.absolutePath}")
 
-			// Now you can manipulate the directory, for example, copying the datapack
-			val datapackSource = File("datapacks/bingobongo") // Correct source path to the datapack folder
+			val datapackSource = File("../datapack-template") // Correct source path to the datapack folder
 			val datapackDest = File(worldDirectory, "datapacks/bingobongo") // Destination path in the world's datapacks folder
 			this.datapackSource = datapackDest
 
@@ -94,7 +93,7 @@ object BingoBongo : ModInitializer {
 						println("Copied file: $sourcePath to $targetPath")
 					}
 				}
-
+/*
 				// After copying all files, let's handle the pack.mcmeta file
 				val mcmetaFile = File(datapackSource, "pack.mcmeta") // Get the pack.mcmeta file from the source
 				if (mcmetaFile.exists()) {
@@ -105,6 +104,8 @@ object BingoBongo : ModInitializer {
 					println("pack.mcmeta file not found in the source directory!")
 				}
 
+
+ */
 				println("Datapack successfully copied to world folder.")
 			} catch (e: IOException) {
 				println("Failed to copy datapack to world folder: ${e.message}")

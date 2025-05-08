@@ -53,7 +53,7 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
             )
             .criterion("tick", TickCriterion.Conditions.createTick())
             .build(rootId)
-        saveAdvancementAsJson(rootId, rootAdvancement)
+        saveAdvancementAsJson(rootId, rootAdvancement,0)
 
         // Register each item advancement
         fullList?.forEachIndexed { index, item ->
@@ -88,7 +88,7 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
             val advancement = builder.build(id)
 
             // Now save the advancement as JSON
-            saveAdvancementAsJson(id, advancement)
+            saveAdvancementAsJson(id, advancement, index)
         }
 
         println("Bingo advancements registered dynamically.")
@@ -104,8 +104,8 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
     }
 
     // Method to save an advancement as a JSON file
-    private fun saveAdvancementAsJson(id: Identifier, advancement: Advancement) {
-        val advancementJson = createAdvancementJson(advancement)
+    private fun saveAdvancementAsJson(id: Identifier, advancement: Advancement, index: Int) {
+        val advancementJson = createAdvancementJson(advancement, index)
         val file = File(datapackSource, "data\\bingobongo\\advancements\\${id.path}.json")
 
         try {
@@ -123,10 +123,11 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
         }
     }
 
-    private fun createAdvancementJson(advancement: Advancement): String {
+    private fun createAdvancementJson(advancement: Advancement, index: Int): String {
         val gson = GsonBuilder().setPrettyPrinting().create()
         val jsonObject = JsonObject()
-
+        val computedX = (index % 5).toDouble()
+        val computedY = (index / 5).toDouble()
         val display = advancement.display
         if (display != null) {
             val displayObj = JsonObject()
@@ -156,6 +157,9 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
         if (advancement.parent != null) {
             jsonObject.addProperty("parent", advancement.parent!!.id.toString())
         }
+
+        jsonObject.addProperty("x", computedX)
+        jsonObject.addProperty("y", computedY)
 
         val criteriaObj = JsonObject()
         for ((name, _) in advancement.criteria) {
