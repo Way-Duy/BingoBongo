@@ -11,6 +11,8 @@ import net.minecraft.util.WorldSavePath
 import org.slf4j.LoggerFactory
 import snagtype.bingobongo.config.BingoSettings
 import snagtype.bingobongo.mixin.AccessorServerAdvancementLoader
+import snagtype.bingobongo.utils.CreateItemList
+import snagtype.bingobongo.utils.JsonUtil
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -63,6 +65,10 @@ object BingoBongo : ModInitializer {
 		// After world loaded
 		ServerLifecycleEvents.SERVER_STARTED.register { server: MinecraftServer ->
 			globalServer = server
+			val itemList = CreateItemList.getListBottomUp(server) //what we will send to the Json Util; List of List<String>
+			//change for testing all items.
+			//val itemList = CreateItemList.getListForTesting(server)
+			JsonUtil.jsonExportList(itemList)
 			// Get the world root directory
 			val worldDirectory = server.getSavePath(WorldSavePath.ROOT).toFile()
 			println("World root directory: ${worldDirectory.absolutePath}")
@@ -110,6 +116,7 @@ object BingoBongo : ModInitializer {
 			} catch (e: IOException) {
 				println("Failed to copy datapack to world folder: ${e.message}")
 			}
+
 		}
 	}
 	fun onPlayerJoin(server: MinecraftServer, player: ServerPlayerEntity) {
