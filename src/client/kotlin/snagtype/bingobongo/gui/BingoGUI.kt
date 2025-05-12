@@ -1,16 +1,16 @@
 package snagtype.bingobongo.gui
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
 import net.minecraft.client.gui.widget.*
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ScrollableWidget
 import net.minecraft.client.gui.widget.CyclingButtonWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.network.ClientAdvancementManager
 import snagtype.bingobongo.BingoBongo
 import snagtype.bingobongo.utils.GenerateBingo
 import snagtype.bingobongo.config.BingoSettings
@@ -20,10 +20,38 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
     private lateinit var freeSpaceCheckbox: CheckboxWidget
     private lateinit var randomRewardsCheckbox: CheckboxWidget
     private lateinit var modeDropdown: CyclingButtonWidget<String>
+    object GuiNavigation {
+        var cameFromCustomGui = false
 
+    }
     private var mode = "line"
+    object GuiScheduler {
+        private var ticksRemaining = -1
+        private var openScreen = false
 
+        fun scheduleOpenAdvancementScreen(ticks: Int) {
+            ticksRemaining = ticks
+            openScreen = true
+        }
+
+        fun tick(client: MinecraftClient) {
+            if (ticksRemaining > 0) {
+                ticksRemaining--
+            } else if (ticksRemaining == 0 && openScreen) {
+
+                //val handler: ClientAdvancementManager = client.player?.networkHandler!!.advancementHandler
+                //client.setScreen(AdvancementsScreen(handler))
+                client.setScreen(CustomAdvancementScreen(client))
+
+                openScreen = false
+            }
+        }
+    }
     override fun init() {
+        ClientTickEvents.END_CLIENT_TICK.register { client ->
+            GuiScheduler.tick(client)
+        }
+
         val columnWidth = width / 2 - 40
         val columnSpacing = 20
         val widgetHeight = 20
@@ -77,9 +105,11 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
         }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
         leftY += spacing
 
-        //Finalize Button
-        addDrawableChild(ButtonWidget.builder(Text.literal("Finalize")) {
-            println("Finalize clicked")
+        //Advancements page Button
+        addDrawableChild(ButtonWidget.builder(Text.literal("Advancements Page")) {
+            this@BingoGUI.close() // Close current GUI
+            GuiScheduler.scheduleOpenAdvancementScreen(60) // Wait 5 ticks before opening
+            GuiNavigation.cameFromCustomGui = true // Set flag to show back button
         }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
         leftY += spacing
 
@@ -102,6 +132,26 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
                 println("Mode set to $mode")
             }
         addDrawableChild(modeDropdown)
+        rightY += spacing
+
+        //Reset Advancements Button
+        addDrawableChild(ButtonWidget.builder(Text.literal("Reset Bingo Advancements")) {
+            BingoBongo.globalServer.playerManager.playerList.forEach { player ->
+                val tracker = player.advancementTracker
+                val advancementLoader =  BingoBongo.globalServer.advancementLoader
+
+                advancementLoader.advancements.forEach { advancement ->
+                    val progress = tracker.getProgress(advancement)
+                    if (advancement.id.namespace == "bingobongo")  //whether to revoke all advancements or just bingo advancements
+                        progress.obtainedCriteria.forEach { criterionName ->
+                            tracker.revokeCriterion(advancement, criterionName)
+                        }
+                }
+
+            }
+        }.dimensions(rightX, rightY, columnWidth, widgetHeight).build())
+        rightY += spacing
+
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -410,3 +460,4 @@ class ModBlacklistPopup(private val parent: Screen) : Screen(Text.literal("Mod B
         BingoSettings.save()
     }
 }
+

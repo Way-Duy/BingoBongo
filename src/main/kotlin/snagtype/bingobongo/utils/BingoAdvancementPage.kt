@@ -8,6 +8,7 @@ import net.minecraft.advancement.criterion.InventoryChangedCriterion
 import net.minecraft.advancement.criterion.TickCriterion
 import net.minecraft.item.Item
 import net.minecraft.item.Items
+import net.minecraft.registry.Registry
 import net.minecraft.server.MinecraftServer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -26,7 +27,19 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
         if (itemList == null || itemList.size !in 24..25) {
             println("Invalid item list")
         }
+        server.playerManager.playerList.forEach { player ->
+            val tracker = player.advancementTracker
+            val advancementLoader = server.advancementLoader
 
+            advancementLoader.advancements.forEach { advancement ->
+                val progress = tracker.getProgress(advancement)
+                if (advancement.id.namespace == "bingobongo")  //whether to revoke all advancements or just bingo advancements
+                    progress.obtainedCriteria.forEach { criterionName ->
+                        tracker.revokeCriterion(advancement, criterionName)
+
+                }
+            }
+        }
         // Injected AdvancementManager
         val loader = server.advancementLoader
         val manager = (loader as AccessorServerAdvancementLoader).manager
@@ -118,13 +131,14 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
 
 
         println("Bingo advancements registered dynamically.")
-
+/*
         // Sync to all players
         val playerList = server.playerManager.playerList
         for (player in playerList) {
             syncAdvancements(server, player)
         }
 
+ */
         // Reload advancements twice
         //for some reason necessary to read our newly generated datapack this way
         forceReload(server)
@@ -267,7 +281,8 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
                 val conditions = JsonObject()
                 val itemsArray = com.google.gson.JsonArray()
                 val itemObject = JsonObject()
-                itemObject.add("item", gson.toJsonTree(listOf(item.asItem().toString())))
+                val itemId = item.toString()
+                itemObject.add("items", gson.toJsonTree(listOf(itemId)))
                 itemsArray.add(itemObject)
                 conditions.add("items", itemsArray)
                 criterionObj.add("conditions", conditions)
