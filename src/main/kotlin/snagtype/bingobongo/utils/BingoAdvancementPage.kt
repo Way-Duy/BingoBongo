@@ -2,6 +2,7 @@ package snagtype.bingobongo.utils
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
+import com.ibm.icu.text.CaseMap.Title
 import net.minecraft.advancement.Advancement
 import net.minecraft.advancement.AdvancementFrame
 import net.minecraft.advancement.criterion.InventoryChangedCriterion
@@ -56,7 +57,7 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
         val rootAdvancement = Advancement.Builder.create()
             .display(
                 Items.NETHER_STAR,
-                Text.literal("Bingo Start"),
+                Text.literal("Bingo"),
                 Text.literal("Complete the tasks!"),
                 Identifier("minecraft:textures/gui/advancements/backgrounds/stone.png"),
                 AdvancementFrame.TASK,
@@ -74,7 +75,19 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
         fullList?.forEachIndexed { index, item ->
             val row = index % 5
             val col = index / 5
-            val name = "row${row}_col${col}"
+            val rowFix :Int
+            val rowVisual :String
+            if(row == 0) {rowFix = 3
+                rowVisual = "Row: 4"}
+            else if(row == 1) {rowFix = 1
+                rowVisual = "Row: 1"}
+            else if (row ==2) {rowFix = 5
+                rowVisual = "Row: 2"}
+            else if (row == 3){rowFix = 4
+            rowVisual = "Row: 3"}
+            else {rowFix = 2
+                rowVisual = "Row: 5"}
+            val name = "row${rowFix}_col${col}"
             val id = Identifier("bingobongo", "bingo/$name")
             val parentId = if (col ==0) rootAdvancement else idGrid[(col - 1) * 5 + row]
 
@@ -83,7 +96,7 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
                 .display(
                     item,
                     Text.literal(item.name.string),
-                    Text.literal("row: ${row} column: ${col}\""),
+                    Text.literal("${rowVisual} column: ${col}\""),
                     Identifier("minecraft:textures/gui/advancements/backgrounds/stone.png"),
                     AdvancementFrame.TASK,
                     true,
@@ -112,7 +125,7 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
                     .parent(parentId)
                     .display(
                         Items.AIR,
-                        Text.literal("Dummy Advancement"),
+                        Text.literal("Dummy Advancement row: ${rowVisual}"),
                         Text.literal("testing"),
                         Identifier("minecraft:textures/gui/advancements/backgrounds/air.png"),
                         AdvancementFrame.TASK,
