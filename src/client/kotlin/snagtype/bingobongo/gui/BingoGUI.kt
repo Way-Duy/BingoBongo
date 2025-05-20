@@ -108,7 +108,7 @@ class BingoGUI : Screen(Text.literal("Bingo Sheet")) {
         //Advancements page Button
         addDrawableChild(ButtonWidget.builder(Text.literal("Advancements Page")) {
             this@BingoGUI.close() // Close current GUI
-            GuiScheduler.scheduleOpenAdvancementScreen(60) // Wait 5 ticks before opening
+            GuiScheduler.scheduleOpenAdvancementScreen(5) // # of ticks before opening
             GuiNavigation.cameFromCustomGui = true // Set flag to show back button
         }.dimensions(leftX, leftY, columnWidth, widgetHeight).build())
         leftY += spacing

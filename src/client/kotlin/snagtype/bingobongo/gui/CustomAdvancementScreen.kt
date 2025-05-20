@@ -11,15 +11,14 @@ class CustomAdvancementScreen(client: MinecraftClient) : AdvancementsScreen(clie
 
         if (BingoGUI.GuiNavigation.cameFromCustomGui) {
             // Create the back button
-            val backButton = ButtonWidget.builder(Text.literal("Back to GUI")) {
+            addDrawableChild(ButtonWidget.builder(Text.literal("Back")) {
                 // Close advancement screen
                 this@CustomAdvancementScreen.close()
                 BingoGUI.GuiNavigation.cameFromCustomGui = false
                 // Open your custom GUI
                 client?.setScreen(BingoGUI())
 
-            }.dimensions(width / 2 - 100, height - 30, 200, 20).build()
-            addDrawableChild(backButton)
+            }.dimensions(width / 2 - 100, height - 30, 200, 20).build())
         }
     }
 

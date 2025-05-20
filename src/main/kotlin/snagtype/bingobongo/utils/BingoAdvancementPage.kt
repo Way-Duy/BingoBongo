@@ -81,10 +81,10 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
                 rowVisual = "Row: 4"}
             else if(row == 1) {rowFix = 1
                 rowVisual = "Row: 1"}
-            else if (row ==2) {rowFix = 5
-                rowVisual = "Row: 2"}
-            else if (row == 3){rowFix = 4
-            rowVisual = "Row: 3"}
+            else if (row ==2) {rowFix = 4
+                rowVisual = "Row: 3"}
+            else if (row == 3){rowFix = 5
+            rowVisual = "Row: 2"}
             else {rowFix = 2
                 rowVisual = "Row: 5"}
             val name = "row${rowFix}_col${col}"
@@ -96,7 +96,7 @@ class BingoAdvancementPage(itemList: List<Item>?, server: MinecraftServer) {
                 .display(
                     item,
                     Text.literal(item.name.string),
-                    Text.literal("${rowVisual} column: ${col}\""),
+                    Text.literal("${rowVisual} column: ${col+1}\""),
                     Identifier("minecraft:textures/gui/advancements/backgrounds/stone.png"),
                     AdvancementFrame.TASK,
                     true,
